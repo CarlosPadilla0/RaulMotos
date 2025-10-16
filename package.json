@@ -11,10 +11,11 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview",
-    "start": "serve -s build -l $PORT",
-    "serve": "serve -s build",
+    "start": "node start-server.js",
+    "start:simple": "npx serve -s dist -p 10000",
+    "serve": "npx serve -s dist",
     "lint": "echo 'No linting configured'",
     "type-check": "tsc --noEmit"
   },

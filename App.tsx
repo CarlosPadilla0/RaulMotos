@@ -38,6 +38,7 @@ const initialOrderData: OrderData = {
     lastName: '',
     phone: '',
     phoneType: 'mobile',
+    ineVerificationCode: '',
   },
   paymentMethod: null,
 };
