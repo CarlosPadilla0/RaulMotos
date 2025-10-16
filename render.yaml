@@ -1,0 +1,13 @@
+# Build command
+buildCommand = "npm run build"
+
+# Start command for static sites
+# For React/Vite apps, we use a static file server
+startCommand = "npx serve -s dist -l 10000"
+
+# Publish directory
+publishDir = "dist"
+
+# Environment
+[env]
+NODE_VERSION = "18"
