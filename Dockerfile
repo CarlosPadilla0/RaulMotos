@@ -24,4 +24,4 @@ RUN npm install -g serve
 EXPOSE $PORT
 
 # Comando por defecto
-CMD ["serve", "-s", "dist", "-l", "$PORT"]
+CMD ["serve", "-s", "build", "-l", "$PORT"]

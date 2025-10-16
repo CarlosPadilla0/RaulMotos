@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
       },
       build: {
-        outDir: 'dist',
+        outDir: 'build',
         assetsDir: 'assets',
         sourcemap: false,
         minify: 'esbuild',
