@@ -1,13 +1,9 @@
-# Build command
-buildCommand = "npm run build"
-
-# Start command for static sites
-# For React/Vite apps, we use a static file server
-startCommand = "npx serve -s dist -l 10000"
-
-# Publish directory
-publishDir = "dist"
-
-# Environment
-[env]
-NODE_VERSION = "18"
+services:
+  - type: web
+    name: raul-motos
+    env: node
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "18"

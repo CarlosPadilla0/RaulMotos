@@ -1,27 +1,44 @@
-# Dockerfile opcional para Render (no es necesario para Static Sites)
-# Render puede usar este Dockerfile si cambias a Web Service
-
-FROM node:18-alpine
+# Multi-stage Dockerfile for optimized production build
+# Stage 1: Build
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copiar package files
+# Copy package files
 COPY package*.json ./
 
-# Instalar dependencias
-RUN npm ci --only=production
+# Install all dependencies (including devDependencies for build)
+RUN npm ci
 
-# Copiar código fuente
+# Copy source code
 COPY . .
 
-# Build la aplicación
+# Build the application
 RUN npm run build
 
-# Instalar serve globalmente
-RUN npm install -g serve
+# Stage 2: Production
+FROM node:18-alpine AS production
 
-# Exponer puerto
+# Create app directory
+WORKDIR /app
+
+# Install serve globally
+RUN npm install -g serve@14.2.5
+
+# Copy built application from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+USER nextjs
+
+# Expose port
 EXPOSE $PORT
 
-# Comando por defecto
-CMD ["serve", "-s", "dist", "-l", "$PORT"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:$PORT/ || exit 1
+
+# Start command
+CMD serve -s dist -l $PORT

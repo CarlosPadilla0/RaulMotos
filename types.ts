@@ -48,6 +48,7 @@ export interface RecipientInfo {
   lastName: string;
   phone: string;
   phoneType: 'mobile' | 'landline';
+  ineVerificationCode: string;
 }
 
 
