@@ -19,11 +19,32 @@ export default defineConfig(({ mode }) => {
         assetsDir: 'assets',
         sourcemap: false,
         minify: 'esbuild',
+        cssCodeSplit: false,
         rollupOptions: {
           output: {
             manualChunks: undefined,
+            assetFileNames: (assetInfo) => {
+              // Mantener nombres específicos para CSS
+              if (assetInfo.name === 'index.css') {
+                return 'assets/index.css';
+              }
+              const info = assetInfo.name?.split('.') || [];
+              const ext = info[info.length - 1];
+              if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+                return `assets/images/[name]-[hash][extname]`;
+              }
+              if (/css/i.test(ext)) {
+                return `assets/css/[name]-[hash][extname]`;
+              }
+              return `assets/[name]-[hash][extname]`;
+            },
+            chunkFileNames: 'assets/js/[name]-[hash].js',
+            entryFileNames: 'assets/js/[name]-[hash].js',
           },
         },
+      },
+      css: {
+        postcss: './postcss.config.js',
       },
       plugins: [react()],
       define: {

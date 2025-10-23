@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Simple start script to handle PORT environment variable properly
+// Servidor optimizado para Render con manejo correcto de tipos MIME
 import { spawn } from 'child_process';
 import { existsSync } from 'fs';
 import path from 'path';
@@ -18,9 +18,27 @@ console.log(`🚀 Starting Coppel Motorcycle Checkout server on port ${port}...`
 console.log(`📁 Serving from: ${buildDir}`);
 console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 
-const serve = spawn('npx', ['serve', '-s', 'build', '-p', port.toString()], {
+// Usar serve con configuraciones específicas para tipos MIME y SPA
+const serveArgs = [
+  'serve',
+  'build',
+  '-p', port.toString(),
+  '--cors',
+  '--no-port-switching',
+  '--config', 'serve.json'
+];
+
+console.log(`📋 Comando: npx ${serveArgs.join(' ')}`);
+
+const serve = spawn('npx', serveArgs, {
   stdio: 'inherit',
-  shell: true
+  shell: true,
+  env: {
+    ...process.env,
+    SERVE_STATIC_HEADERS: JSON.stringify({
+      'Cache-Control': 'public, max-age=31536000, immutable'
+    })
+  }
 });
 
 serve.on('close', (code) => {

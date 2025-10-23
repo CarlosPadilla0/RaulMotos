@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos personalizados para Coppel */
+@layer base {
+  body {
+    @apply bg-gray-100 font-sans;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-coppel-blue text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-coppel-yellow text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6 border border-gray-200;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-coppel-blue focus:border-transparent outline-none transition-all duration-200;
+  }
+  
+  .motorcycle-card {
+    @apply card hover:shadow-lg transition-shadow duration-300 cursor-pointer border-2 border-transparent hover:border-coppel-blue;
+  }
+  
+  .checkout-step {
+    @apply flex items-center space-x-3 p-4 rounded-lg transition-all duration-200;
+  }
+  
+  .checkout-step.active {
+    @apply bg-coppel-blue text-white;
+  }
+  
+  .checkout-step.completed {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .checkout-step.pending {
+    @apply bg-gray-100 text-gray-600;
+  }
+}
+
+@layer utilities {
+  .text-coppel-blue {
+    color: #0070c0;
+  }
+  
+  .text-coppel-yellow {
+    color: #ffc107;
+  }
+  
+  .bg-coppel-blue {
+    background-color: #0070c0;
+  }
+  
+  .bg-coppel-yellow {
+    background-color: #ffc107;
+  }
+  
+  .border-coppel-blue {
+    border-color: #0070c0;
+  }
+  
+  .ring-coppel-blue {
+    --tw-ring-color: #0070c0;
+  }
+}
