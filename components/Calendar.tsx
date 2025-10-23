@@ -29,11 +29,10 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
     return date;
   }, []);
 
-  // 🟩 Calcular el siguiente lunes estático
   const nextMonday = useMemo(() => {
     const date = new Date(today);
     const day = date.getDay();
-    const daysUntilMonday = (8 - day) % 7 || 7; // siguiente lunes, incluso si hoy es lunes
+    const daysUntilMonday = (8 - day) % 7 || 7; 
     date.setDate(date.getDate() + daysUntilMonday);
     return date;
   }, [today]);
@@ -46,7 +45,6 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
   const [currentDate, setCurrentDate] = useState(getInitialDate());
 
   useEffect(() => {
-    // Si no hay fecha seleccionada, mostrar el mes del siguiente lunes
     if (!selectedDate) setCurrentDate(nextMonday);
   }, [selectedDate, nextMonday]);
 
@@ -97,7 +95,7 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
 
       let dayClasses = "w-10 h-10 flex items-center justify-center rounded-full text-sm ";
       if (isUnavailable) {
-        dayClasses += "text-gray-400 bg-gray-100 cursor-not-allowed";
+        dayClasses += "text-gray-600 bg-gray-200 cursor-not-allowed";
       } else {
         dayClasses += "cursor-pointer transition-colors ";
         if (isSelected) {
@@ -105,7 +103,7 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
         } else if (isSuggested && !selectedDate) {
           dayClasses += "bg-green-500 text-white";
         } else {
-          dayClasses += "bg-blue-50 text-coppel-blue hover:bg-blue-100";
+          dayClasses += "bg-coppel-blue/30 text-coppel-blue hover:bg-coppel-blue/40";
         }
       }
 
@@ -147,15 +145,15 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
       <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-gray-600">
         <div className="flex items-center">
           <span className="w-3 h-3 rounded-full bg-green-500 mr-2"></span>
-          <span>Sugerido (Lunes)</span>
+          <span>Fecha Sugerida</span>
         </div>
         <div className="flex items-center">
           <span className="w-3 h-3 rounded-full bg-coppel-blue mr-2"></span>
-          <span>Seleccionado</span>
+          <span>Fechas Disponibles</span>
         </div>
         <div className="flex items-center">
           <span className="w-3 h-3 rounded-full bg-gray-100 border mr-2"></span>
-          <span>No disponible</span>
+          <span>Fecha no disponible</span>
         </div>
       </div>
     </div>

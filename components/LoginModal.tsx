@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { OrderData, BillingInfo } from '../types';
 
 const mockUsers: Record<string, BillingInfo> = {
-     'cliente@coppel.com': {
+     'RaulMireless@coppel.com': {
         rfc: 'MIRM900101ABC',
         useGenericRfc: false,
         name: 'Raul Mireles',
@@ -15,7 +15,7 @@ const mockUsers: Record<string, BillingInfo> = {
         curp: 'MIRM900101HZZZZZ01',
         gender: 'male',
     },
-    'nuevo@coppel.com': {
+    'MelissaVelazquez@coppel.com': {
         rfc: 'VEGM850202XYZ',
         useGenericRfc: false,
         name: 'Melissa Velazquez',
@@ -37,7 +37,7 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ setOrderData, onContinue }) => {
-    const [email, setEmail] = useState('cliente@coppel.com');
+    const [email, setEmail] = useState('RaulMireless@coppel.com');
     const [password, setPassword] = useState('12345');
     const [error, setError] = useState('');
 
