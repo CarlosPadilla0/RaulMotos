@@ -2,7 +2,7 @@ services:
   - type: web
     name: coppel-motorcycle-checkout
     runtime: static
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     staticPublishPath: ./build
     routes:
       - type: rewrite
@@ -10,8 +10,7 @@ services:
         destination: /index.html
     envVars:
       - key: NODE_VERSION
-        value: "18.18.0"
-      - key: NODE_ENV
-        value: production
-# Nota: Para variables sensibles (API keys, etc.), configúralas en el Dashboard de Render
-# como variables de entorno del sitio (se usan en tiempo de build).
+        value: "22.12.0"
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
+# Nota: No fijamos NODE_ENV=production para permitir que npm instale devDependencies necesarias (typescript, @types/node, vite).
