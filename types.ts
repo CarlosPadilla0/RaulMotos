@@ -2,6 +2,7 @@ export enum CheckoutStep {
   Home,
   AddedToCart,
   DeliveryOptions,
+  Login,
   AddressSelection,
   BillingInfo,
   RecipientInfo,
@@ -38,6 +39,7 @@ export interface BillingInfo {
     regime: string;
     cfdiUse: string;
     email: string;
+    confirmEmail: string;
     curp: string;
     gender: 'male' | 'female' | '';
 }
@@ -60,6 +62,7 @@ export interface OrderData {
     none: boolean;
   };
   deliveryMethod: 'home' | 'store' | null;
+  pickupDate: string | null;
   address: Address | null;
   billingInfo: BillingInfo;
   recipientInfo: RecipientInfo;

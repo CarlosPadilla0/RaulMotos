@@ -1,7 +1,7 @@
-
 import React from 'react';
 import type { OrderData } from '../types';
 import { HomeIcon, StoreIcon } from './icons';
+import { Calendar } from './Calendar';
 
 interface DeliveryOptionsProps {
   orderData: OrderData;
@@ -18,34 +18,49 @@ const DeliveryOptionCard: React.FC<{
     onChange: (value: 'home' | 'store') => void;
     disabled?: boolean;
 }> = ({ icon, title, deliveryEstimate, description, value, selectedValue, onChange, disabled = false}) => (
-    <label className={`flex items-center p-4 border-2 rounded-lg transition-all ${disabled ? 'opacity-50 cursor-not-allowed bg-gray-100' : selectedValue === value ? 'border-coppel-blue bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'} ${!disabled && 'cursor-pointer'}`}>
-        <input
-            type="radio"
-            name="deliveryMethod"
-            value={value}
-            checked={selectedValue === value}
-            onChange={() => !disabled && onChange(value)}
-            className="sr-only"
-            disabled={disabled}
-        />
-        <div className={`mr-4 ${selectedValue === value && !disabled ? 'text-coppel-blue' : 'text-gray-500'}`}>
-            {icon}
+    <label className={`flex flex-col p-4 border-2 rounded-lg transition-all ${disabled ? 'opacity-50 cursor-not-allowed bg-gray-100' : selectedValue === value ? 'border-coppel-blue bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'} ${!disabled && 'cursor-pointer'}`}>
+        <div className="flex items-center">
+            <input
+                type="radio"
+                name="deliveryMethod"
+                value={value}
+                checked={selectedValue === value}
+                onChange={() => !disabled && onChange(value)}
+                className="sr-only"
+                disabled={disabled}
+            />
+            <div className={`mr-4 ${selectedValue === value && !disabled ? 'text-coppel-blue' : 'text-gray-500'}`}>
+                {icon}
+            </div>
+            <div>
+                <p className="font-bold text-gray-800">{title}</p>
+                <p className={`text-sm font-semibold ${disabled ? 'text-gray-500' : 'text-coppel-blue'}`}>{deliveryEstimate}</p>
+                <p className="text-xs text-gray-500 mt-1">{description}</p>
+            </div>
         </div>
-        <div>
-            <p className="font-bold text-gray-800">{title}</p>
-            <p className={`text-sm font-semibold ${disabled ? 'text-gray-500' : 'text-coppel-blue'}`}>{deliveryEstimate}</p>
-            <p className="text-xs text-gray-500 mt-1">{description}</p>
-        </div>
+        
     </label>
 );
 
 
 export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({ orderData, setOrderData }) => {
-  const { product } = orderData;
+  const { product, deliveryMethod, pickupDate } = orderData;
   
   const handleDeliveryChange = (value: 'home' | 'store') => {
-    setOrderData(prev => ({ ...prev, deliveryMethod: value }));
+    setOrderData(prev => ({ ...prev, deliveryMethod: value, pickupDate: null })); // Reset date on method change
   };
+  
+  const handleDateSelect = (date: string) => {
+    setOrderData(prev => ({...prev, pickupDate: date }));
+  };
+
+  const getHomeDeliveryEstimate = () => {
+    if (deliveryMethod === 'home' && pickupDate) {
+        const date = new Date(pickupDate + 'T00:00:00');
+        return `Llega el ${date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}`;
+    }
+    return "Elige una fecha para la entrega";
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-lg w-full p-6 md:p-8">
@@ -84,7 +99,7 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({ orderData, set
              <DeliveryOptionCard 
                 icon={<HomeIcon className="w-8 h-8"/>}
                 title="Recibir a domicilio"
-                deliveryEstimate="Llega el 22 de octubre"
+                deliveryEstimate={getHomeDeliveryEstimate()}
                 description="Más adelante podrás elegir el domicilio"
                 value="home"
                 selectedValue={orderData.deliveryMethod}
@@ -93,14 +108,20 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({ orderData, set
             <DeliveryOptionCard 
                 icon={<StoreIcon className="w-8 h-8"/>}
                 title="Recoger en tienda"
-                deliveryEstimate="Próximamente disponible"
-                description="Esta opción no está habilitada por el momento."
+                deliveryEstimate="No disponible"
+                description="Esta opción no está disponible por el momento"
                 value="store"
                 selectedValue={orderData.deliveryMethod}
                 onChange={handleDeliveryChange}
-                disabled
+                disabled={true}
             />
         </div>
+         {deliveryMethod === 'home' && (
+            <div className="mt-6">
+                <h4 className="font-bold text-gray-800 mb-2">Selecciona un día de entrega</h4>
+                <Calendar selectedDate={pickupDate} onDateSelect={handleDateSelect} />
+            </div>
+        )}
     </div>
   );
 };

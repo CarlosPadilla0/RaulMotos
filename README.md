@@ -1,6 +1,37 @@
-# RaulMotos - Motorcycle Checkout Application
+# Coppel Motorcycle Checkout - Aplicación de Checkout de Motocicletas
 
-A React/TypeScript application for motorcycle purchasing and checkout built with Vite.
+Una aplicación React/TypeScript para la compra y checkout de motocicletas construida con Vite.
+
+## 🚀 Despliegue en Render
+
+Este proyecto está **optimizado para despliegue en Render** con configuración automática.
+
+### 🎯 Despliegue Rápido
+
+1. **Conecta tu repositorio a Render:**
+   - Ve a [render.com](https://render.com)
+   - Crea una cuenta gratuita
+   - Conecta tu repositorio de GitHub/GitLab
+
+2. **Configuración Automática:**
+   - Render detectará el archivo `render.yaml`
+   - Build Command: `npm ci && npm run build`
+   - Start Command: `npm start`
+   - Node Version: 18.18.0
+
+3. **Variables de Entorno (Opcional):**
+   ```env
+   GEMINI_API_KEY=tu_clave_api_aquí
+   NODE_ENV=production
+   ```
+
+### 📋 Configuración Incluida
+
+- ✅ `render.yaml` - Configuración completa de servicios
+- ✅ `start-server.js` - Servidor optimizado para producción
+- ✅ `.nvmrc` - Versión específica de Node.js
+- ✅ Scripts de build optimizados
+- ✅ Manejo automático del puerto
 
 ## 🚀 Quick Start
 

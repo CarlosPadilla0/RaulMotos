@@ -5,6 +5,7 @@ import { Home } from './components/Home';
 import { AddedToCartModal } from './components/AddedToCartModal';
 import { DeliveryOptions } from './components/DeliveryOptions';
 import { OrderSummary } from './components/OrderSummary';
+import { LoginModal } from './components/LoginModal';
 import { AddressSelection } from './components/AddressSelection';
 import { BillingInfo } from './components/BillingInfo';
 import { RecipientInfo } from './components/RecipientInfo';
@@ -19,6 +20,7 @@ const initialOrderData: OrderData = {
     none: false,
   },
   deliveryMethod: null,
+  pickupDate: null,
   address: null,
   billingInfo: {
     rfc: '',
@@ -29,6 +31,7 @@ const initialOrderData: OrderData = {
     regime: '',
     cfdiUse: '',
     email: '',
+    confirmEmail: '',
     curp: '',
     gender: '',
   },
@@ -46,10 +49,12 @@ const initialOrderData: OrderData = {
 const App: React.FC = () => {
   const [step, setStep] = useState<CheckoutStep>(CheckoutStep.Home);
   const [orderData, setOrderData] = useState<OrderData>(initialOrderData);
+  const [isGuest, setIsGuest] = useState(false);
 
   const resetFlow = () => {
     setOrderData(initialOrderData);
     setStep(CheckoutStep.Home);
+    setIsGuest(false);
   };
 
   const handleSelectProduct = (product: Product) => {
@@ -83,16 +88,29 @@ const App: React.FC = () => {
             </div>
             <div>
                 <OrderSummary product={orderData.product!} onContinue={() => {
-                    if (orderData.deliveryMethod) {
-                        const nextStep = orderData.deliveryMethod === 'home' ? CheckoutStep.AddressSelection : CheckoutStep.BillingInfo;
-                        setStep(nextStep);
-                    } else {
-                        alert("Por favor, selecciona una opción de entrega.");
+                    if (!orderData.deliveryMethod) {
+                       alert("Por favor, selecciona una opción de entrega.");
+                       return;
                     }
+                    if (orderData.deliveryMethod === 'home' && !orderData.pickupDate) {
+                        alert("Por favor, selecciona una fecha de entrega.");
+                        return;
+                    }
+                    setStep(CheckoutStep.Login);
                 }} />
             </div>
           </div>
         );
+
+      case CheckoutStep.Login:
+        return <LoginModal 
+            setOrderData={setOrderData}
+            onContinue={(isGuestUser) => {
+                setIsGuest(isGuestUser);
+                const nextStep = orderData.deliveryMethod === 'home' ? CheckoutStep.AddressSelection : CheckoutStep.BillingInfo;
+                setStep(nextStep);
+            }} 
+        />;
 
       case CheckoutStep.AddressSelection:
          return (
@@ -102,6 +120,7 @@ const App: React.FC = () => {
                     setOrderData={setOrderData} 
                     onBack={() => setStep(CheckoutStep.DeliveryOptions)}
                     onContinue={() => setStep(CheckoutStep.BillingInfo)}
+                    isGuest={isGuest}
                 />
             </div>
         );

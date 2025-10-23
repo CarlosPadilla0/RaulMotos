@@ -14,10 +14,14 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "start": "node start-server.js",
-    "start:simple": "npx serve -s dist -p 10000",
-    "serve": "npx serve -s dist",
+    "start:simple": "npx serve -s build -p 10000",
+    "serve": "npx serve -s build",
     "lint": "echo 'No linting configured'",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "prebuild": "echo 'Starting build process...'",
+    "postbuild": "echo 'Build completed successfully!'",
+    "verify-render": "node verify-render.js",
+    "deploy-check": "npm run verify-render && npm run type-check && npm run build"
   },
   "dependencies": {
     "react": "^19.2.0",

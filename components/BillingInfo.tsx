@@ -86,7 +86,11 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
             billingInfo: { 
                 ...prev.billingInfo, 
                 useGenericRfc: isChecked,
-                rfc: isChecked ? GENERIC_RFC : '', // Only change the RFC itself, preserving other data
+                rfc: isChecked ? GENERIC_RFC : '',
+                name: isChecked ? 'PÚBLICO EN GENERAL' : prev.billingInfo.name === 'PÚBLICO EN GENERAL' ? '' : prev.billingInfo.name,
+                postalCode: isChecked ? '80105' : prev.billingInfo.postalCode === '80105' ? '' : prev.billingInfo.postalCode,
+                regime: isChecked ? '616' : '',
+                cfdiUse: isChecked ? 'S01' : '',
             }
         }));
     };
@@ -96,15 +100,24 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
             return;
         }
 
-        const { useGenericRfc, name, postalCode, cfdiUse, email, rfc, regime, dob, curp, gender } = billingInfo;
+        const { useGenericRfc, name, postalCode, cfdiUse, email, confirmEmail, rfc, regime, dob, curp, gender } = billingInfo;
 
-        // 1. Check required fields that are always needed
-        if (!name || !postalCode || !cfdiUse || !email) {
-            alert('Por favor, completa los campos obligatorios (*): Nombre, Código Postal, Uso de CFDI y Correo electrónico.');
+        if (!name || !postalCode || !cfdiUse || !email || !confirmEmail) {
+            alert('Por favor, completa los campos obligatorios (*): Nombre, Código Postal, Uso de CFDI y ambos campos de Correo electrónico.');
             return;
         }
 
-        // 2. Check fields required only for non-generic RFC
+        if (email !== confirmEmail) {
+            alert('Los correos electrónicos no coinciden. Por favor, verifícalos.');
+            return;
+        }
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Por favor, introduce un correo electrónico con un formato válido (ej. tu@correo.com).');
+            return;
+        }
+
         if (!useGenericRfc) {
             if (!rfc || !regime || !dob || !curp || !gender) {
                 alert('Para facturar, por favor completa todos los campos obligatorios (*): RFC, Régimen fiscal, Fecha de Nacimiento, CURP y Género.');
@@ -112,14 +125,6 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
             }
         }
 
-        // 3. Keep only the most basic email format validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            alert('Por favor, introduce un correo electrónico con un formato válido (ej. tu@correo.com).');
-            return;
-        }
-
-        // All strict validations for RFC, CURP, and Postal Code length have been removed to prevent blocking.
         onContinue();
     };
 
@@ -157,6 +162,7 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
                         <option value="601">General de Ley Personas Morales</option>
                         <option value="603">Personas Morales con Fines no Lucrativos</option>
                         <option value="612">Personas Físicas con Actividades Empresariales y Profesionales</option>
+                        <option value="616">Sin obligaciones fiscales</option>
                         <option value="621">Incorporación Fiscal</option>
                         <option value="626">Régimen Simplificado de Confianza</option>
                     </Select>
@@ -166,11 +172,12 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
                         <option value="G01">Adquisición de mercancías</option>
                         <option value="G03">Gastos en general</option>
                         <option value="I08">Mobiliario y equipo de oficina por inversiones</option>
+                        <option value="S01">Sin efectos fiscales</option>
                         <option value="P01">Por definir</option>
                     </Select>
                      <Input label="Correo electrónico" id="email" name="email" type="email" value={billingInfo.email} onChange={handleChange} required />
+                     <Input label="Confirmar correo electrónico" id="confirmEmail" name="confirmEmail" type="email" value={billingInfo.confirmEmail} onChange={handleChange} required />
                      
-                     {/* Optional fields - hide them if using generic RFC */}
                      {!billingInfo.useGenericRfc && (
                         <>
                             <Input 

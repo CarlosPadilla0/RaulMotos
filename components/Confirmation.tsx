@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { OrderData } from '../types';
 import { CheckCircleIcon } from './icons';
@@ -9,9 +8,13 @@ interface ConfirmationProps {
 }
 
 export const Confirmation: React.FC<ConfirmationProps> = ({ orderData, onStartOver }) => {
-  const { product, address, paymentMethod, recipientInfo } = orderData;
+  const { product, address, paymentMethod, recipientInfo, deliveryMethod, pickupDate } = orderData;
   const recipient = recipientInfo.recipientType === 'other' ? `${recipientInfo.firstName} ${recipientInfo.lastName}` : address?.recipientName;
   
+  const deliveryDate = pickupDate
+    ? new Date(pickupDate + 'T00:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+    : "Fecha no especificada";
+
   return (
     <div className="max-w-2xl mx-auto my-10 p-8 bg-white rounded-lg shadow-xl">
         <div className="text-center">
@@ -32,11 +35,11 @@ export const Confirmation: React.FC<ConfirmationProps> = ({ orderData, onStartOv
                 </div>
 
                 <div>
-                    <h3 className="font-semibold text-gray-700">Dirección de Entrega</h3>
-                    {address ? (
+                    <h3 className="font-semibold text-gray-700">{deliveryMethod === 'store' ? 'Recoger en' : 'Dirección de Entrega'}</h3>
+                    {deliveryMethod === 'home' && address ? (
                         <p className="text-gray-600">{address.street}, {address.city}, {address.state} {address.zip}</p>
                     ) : (
-                        <p className="text-gray-600">Recoger en tienda.</p>
+                        <p className="text-gray-600">Tienda Coppel seleccionada</p>
                     )}
                 </div>
 
@@ -51,8 +54,8 @@ export const Confirmation: React.FC<ConfirmationProps> = ({ orderData, onStartOv
                 </div>
                 
                  <div>
-                    <h3 className="font-semibold text-gray-700">Fecha de Entrega Estimada</h3>
-                    <p className="text-gray-600">22 de octubre</p>
+                    <h3 className="font-semibold text-gray-700">Fecha de Entrega Programada</h3>
+                    <p className="text-gray-600">{deliveryDate}</p>
                 </div>
 
                 <div>

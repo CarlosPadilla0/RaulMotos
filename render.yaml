@@ -1,9 +1,17 @@
 services:
   - type: web
-    name: raul-motos
+    name: coppel-motorcycle-checkout
     env: node
+    region: oregon # Puedes cambiar a 'singapore' si tu audiencia está en Asia
+    plan: free # starter, standard, pro, etc.
     buildCommand: npm ci && npm run build
     startCommand: npm start
+    healthCheckPath: /
     envVars:
       - key: NODE_VERSION
-        value: "18"
+        value: "18.18.0"
+      - key: NODE_ENV
+        value: production
+    # Variables de entorno opcionales (descomenta si las necesitas)
+    # - key: GEMINI_API_KEY
+    #   value: your_gemini_api_key_here
