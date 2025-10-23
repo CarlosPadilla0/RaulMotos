@@ -1,19 +1,17 @@
 services:
   - type: web
     name: coppel-motorcycle-checkout
-    env: node
-    region: oregon # Puedes cambiar a 'singapore' si tu audiencia está en Asia
-    plan: free # starter, standard, pro, etc.
+    runtime: static
     buildCommand: npm ci && npm run build
-    startCommand: npm start
-    healthCheckPath: /
+    staticPublishPath: ./build
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: NODE_VERSION
         value: "18.18.0"
       - key: NODE_ENV
         value: production
-      - key: SERVE_STATIC
-        value: "true"
-    # Variables de entorno opcionales (descomenta si las necesitas)
-    # - key: GEMINI_API_KEY
-    #   value: your_gemini_api_key_here
+# Nota: Para variables sensibles (API keys, etc.), configúralas en el Dashboard de Render
+# como variables de entorno del sitio (se usan en tiempo de build).
