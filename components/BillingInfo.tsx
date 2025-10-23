@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { OrderData } from '../types';
 import { CheckoutStepWrapper } from './CheckoutStepWrapper';
@@ -16,7 +17,7 @@ const Input = ({ label, id, required, ...props }: React.InputHTMLAttributes<HTML
         <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
             {label}{required && <span className="text-red-500">*</span>}
         </label>
-        <input id={id} {...props} className="block w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-coppel-blue focus:border-coppel-blue sm:text-sm disabled:bg-gray-100" />
+        <input id={id} {...props} className="block w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-coppel-blue focus:border-coppel-blue sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed" />
     </div>
 );
 
@@ -25,7 +26,7 @@ const Select = ({ label, id, children, required, ...props }: React.SelectHTMLAtt
         <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
             {label}{required && <span className="text-red-500">*</span>}
         </label>
-        <select id={id} {...props} className="block w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-coppel-blue focus:border-coppel-blue sm:text-sm">
+        <select id={id} {...props} className="block w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-coppel-blue focus:border-coppel-blue sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed">
             {children}
         </select>
     </div>
@@ -88,7 +89,7 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
                 useGenericRfc: isChecked,
                 rfc: isChecked ? GENERIC_RFC : '',
                 name: isChecked ? 'PÚBLICO EN GENERAL' : prev.billingInfo.name === 'PÚBLICO EN GENERAL' ? '' : prev.billingInfo.name,
-                postalCode: isChecked ? '80105' : prev.billingInfo.postalCode === '80105' ? '' : prev.billingInfo.postalCode,
+                postalCode: isChecked ? '00000' : prev.billingInfo.postalCode === '00000' ? '' : prev.billingInfo.postalCode,
                 regime: isChecked ? '616' : '',
                 cfdiUse: isChecked ? 'S01' : '',
             }
@@ -154,10 +155,10 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
                             </p>
                         )}
                      </div>
-                     <Input label="Nombre o razón social" id="name" name="name" value={billingInfo.name} onChange={handleChange} required />
-                     <Input label="Código Postal" id="postalCode" name="postalCode" value={billingInfo.postalCode} onChange={handleChange} maxLength={5} required />
+                     <Input label="Nombre o razón social" id="name" name="name" value={billingInfo.name} onChange={handleChange} required disabled={billingInfo.useGenericRfc} />
+                     <Input label="Código Postal" id="postalCode" name="postalCode" value={billingInfo.postalCode} onChange={handleChange} maxLength={5} required disabled={billingInfo.useGenericRfc} />
 
-                     <Select label="Régimen fiscal" id="regime" name="regime" value={billingInfo.regime} onChange={handleChange} required={!billingInfo.useGenericRfc} >
+                     <Select label="Régimen fiscal" id="regime" name="regime" value={billingInfo.regime} onChange={handleChange} required={!billingInfo.useGenericRfc} disabled={billingInfo.useGenericRfc}>
                         <option value="">Selecciona una opción</option>
                         <option value="601">General de Ley Personas Morales</option>
                         <option value="603">Personas Morales con Fines no Lucrativos</option>
@@ -167,7 +168,7 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
                         <option value="626">Régimen Simplificado de Confianza</option>
                     </Select>
 
-                    <Select label="Uso de CFDI" id="cfdiUse" name="cfdiUse" value={billingInfo.cfdiUse} onChange={handleChange} required>
+                    <Select label="Uso de CFDI" id="cfdiUse" name="cfdiUse" value={billingInfo.cfdiUse} onChange={handleChange} required disabled={billingInfo.useGenericRfc}>
                          <option value="">Selecciona una opción</option>
                         <option value="G01">Adquisición de mercancías</option>
                         <option value="G03">Gastos en general</option>
