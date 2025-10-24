@@ -1,17 +1,22 @@
-
 import React from 'react';
-import type { Product } from '../types';
+import type { OrderData } from '../types';
 
 interface OrderSummaryProps {
-  product: Product;
+  orderData: OrderData;
   onContinue: () => void;
   continueButtonText?: string;
 }
 
-export const OrderSummary: React.FC<OrderSummaryProps> = ({ product, onContinue, continueButtonText = "Continuar compra" }) => {
+export const OrderSummary: React.FC<OrderSummaryProps> = ({ orderData, onContinue, continueButtonText = "Continuar compra" }) => {
+    const { product, insurance } = orderData;
+    
+    if (!product) {
+        return null;
+    }
+
     const discount = product.originalPrice - product.price;
     const shipping = 0; // Gratis
-    const total = product.price + shipping;
+    const total = product.price + insurance.price;
 
     return (
         <div className="bg-white rounded-lg shadow-lg w-full p-6">
@@ -25,6 +30,17 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ product, onContinue,
                     <span>Descuento</span>
                     <span>-${discount.toLocaleString('es-MX')}</span>
                 </div>
+                {insurance.price > 0 ? (
+                    <div className="flex justify-between">
+                        <span>{insurance.name}</span>
+                        <span>${insurance.price.toLocaleString('es-MX')}</span>
+                    </div>
+                ) : (
+                    <div className="flex justify-between">
+                        <span>Seguro</span>
+                        <span>No incluido</span>
+                    </div>
+                )}
                 <div className="flex justify-between">
                     <span>Envío</span>
                     <span className="text-coppel-blue font-semibold">Gratis</span>

@@ -1,7 +1,8 @@
 
 
+
 import React from 'react';
-import type { OrderData, Address } from '../types';
+import type { OrderData, Address, ModalConfig } from '../types';
 import { CheckoutStepWrapper } from './CheckoutStepWrapper';
 import { MotorcycleIcon, StarIcon, HomeIcon, PlusCircleIcon } from './icons';
 
@@ -33,9 +34,10 @@ interface AddressSelectionProps {
   onBack: () => void;
   onContinue: () => void;
   isGuest: boolean;
+  showModal: (config: ModalConfig) => void;
 }
 
-export const AddressSelection: React.FC<AddressSelectionProps> = ({ orderData, setOrderData, onBack, onContinue, isGuest }) => {
+export const AddressSelection: React.FC<AddressSelectionProps> = ({ orderData, setOrderData, onBack, onContinue, isGuest, showModal }) => {
     
     const handleSelectAddress = (address: Address) => {
         setOrderData(prev => ({...prev, address: address}));
@@ -43,21 +45,37 @@ export const AddressSelection: React.FC<AddressSelectionProps> = ({ orderData, s
     };
 
     const handleAddAddressClick = () => {
+        const continueWithMock = (isGuestUser: boolean) => {
+            if (isGuestUser) {
+                 const mockGuestAddress: Address = {
+                    id: 'guest-addr-1',
+                    isFavorite: false,
+                    recipientName: 'Invitado',
+                    street: 'Domicilio de Invitado 123',
+                    city: 'CIUDAD INVITADO',
+                    state: 'ESTADO',
+                    zip: '00000'
+                };
+                setOrderData(prev => ({...prev, address: mockGuestAddress}));
+                onContinue();
+            }
+        };
+
         if (isGuest) {
-            alert("Aquí se abriría un modal para agregar una nueva dirección. Para esta demostración, continuaremos con datos de ejemplo.");
-            const mockGuestAddress: Address = {
-                id: 'guest-addr-1',
-                isFavorite: false,
-                recipientName: 'Invitado',
-                street: 'Domicilio de Invitado 123',
-                city: 'CIUDAD INVITADO',
-                state: 'ESTADO',
-                zip: '00000'
-            };
-            setOrderData(prev => ({...prev, address: mockGuestAddress}));
-            onContinue();
+            showModal({
+                type: 'info',
+                title: 'Agregar Dirección (Demo)',
+                message: 'En una aplicación real, aquí se abriría un formulario para agregar una nueva dirección. Para esta demostración, se usará un domicilio de ejemplo.',
+                primaryButtonText: 'Continuar',
+                onPrimaryAction: () => continueWithMock(true),
+            });
         } else {
-            alert("Aquí se abriría un modal para que un usuario registrado agregue una nueva dirección.");
+            showModal({
+                type: 'info',
+                title: 'Función no disponible',
+                message: 'En una aplicación real, aquí podrías agregar una nueva dirección a tu cuenta.',
+                primaryButtonText: 'Entendido',
+            });
         }
     };
 

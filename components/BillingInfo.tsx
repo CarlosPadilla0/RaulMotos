@@ -1,6 +1,5 @@
-
 import React from 'react';
-import type { OrderData } from '../types';
+import type { OrderData, ModalConfig } from '../types';
 import { CheckoutStepWrapper } from './CheckoutStepWrapper';
 
 interface BillingInfoProps {
@@ -8,6 +7,8 @@ interface BillingInfoProps {
   setOrderData: React.Dispatch<React.SetStateAction<OrderData>>;
   onBack: () => void;
   onContinue: () => void;
+  showModal: (config: ModalConfig) => void;
+  closeModal: () => void;
 }
 
 const GENERIC_RFC = 'XAXX010101000';
@@ -33,7 +34,7 @@ const Select = ({ label, id, children, required, ...props }: React.SelectHTMLAtt
 );
 
 
-export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderData, onBack, onContinue }) => {
+export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderData, onBack, onContinue, showModal, closeModal }) => {
     
     const { billingInfo } = orderData;
 
@@ -97,36 +98,44 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
     };
     
     const handleContinue = () => {
-        if (!window.confirm("¿Estás seguro de que tus datos son correctos?")) {
-            return;
-        }
-
+        // Step 1: Perform all validations first.
         const { useGenericRfc, name, postalCode, cfdiUse, email, confirmEmail, rfc, regime, dob, curp, gender } = billingInfo;
 
         if (!name || !postalCode || !cfdiUse || !email || !confirmEmail) {
-            alert('Por favor, completa los campos obligatorios (*): Nombre, Código Postal, Uso de CFDI y ambos campos de Correo electrónico.');
+            showModal({type: 'warning', title: 'Campos Obligatorios', message: 'Por favor, completa los campos obligatorios (*): Nombre, Código Postal, Uso de CFDI y ambos campos de Correo electrónico.' });
             return;
         }
 
         if (email !== confirmEmail) {
-            alert('Los correos electrónicos no coinciden. Por favor, verifícalos.');
+            showModal({type: 'warning', title: 'Verificación Fallida', message: 'Los correos electrónicos no coinciden. Por favor, verifícalos.' });
             return;
         }
         
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            alert('Por favor, introduce un correo electrónico con un formato válido (ej. tu@correo.com).');
+            showModal({type: 'warning', title: 'Formato Inválido', message: 'Por favor, introduce un correo electrónico con un formato válido (ej. tu@correo.com).' });
             return;
         }
 
         if (!useGenericRfc) {
             if (!rfc || !regime || !dob || !curp || !gender) {
-                alert('Para facturar, por favor completa todos los campos obligatorios (*): RFC, Régimen fiscal, Fecha de Nacimiento, CURP y Género.');
+                showModal({type: 'warning', title: 'Campos de Facturación Requeridos', message: 'Para facturar, por favor completa todos los campos obligatorios (*): RFC, Régimen fiscal, Fecha de Nacimiento, CURP y Género.' });
                 return;
             }
         }
-
-        onContinue();
+        
+        // Step 2: If all validations pass, show the confirmation modal.
+        showModal({
+            type: 'confirmation',
+            title: 'Confirmar Información',
+            message: '¿Estás seguro de que tus datos de facturación son correctos? No podrán ser modificados después.',
+            primaryButtonText: 'Confirmar',
+            onPrimaryAction: () => {
+                onContinue();
+                closeModal();
+            },
+            secondaryButtonText: 'Revisar',
+        });
     };
 
 

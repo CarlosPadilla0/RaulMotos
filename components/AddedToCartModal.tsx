@@ -1,40 +1,52 @@
 
-import React, { useState } from 'react';
+
+import React from 'react';
 import { ChevronRightIcon, CheckCircleIcon, XCircleIcon } from './icons';
-import type { OrderData } from '../types';
+import type { OrderData, ModalConfig } from '../types';
 
 interface AddedToCartModalProps {
   orderData: OrderData;
   setOrderData: React.Dispatch<React.SetStateAction<OrderData>>;
   onContinue: () => void;
+  showModal: (config: ModalConfig) => void;
 }
 
-export const AddedToCartModal: React.FC<AddedToCartModalProps> = ({ orderData, setOrderData, onContinue }) => {
-  const [insurance, setInsurance] = useState(orderData.insurance);
+export const AddedToCartModal: React.FC<AddedToCartModalProps> = ({ orderData, setOrderData, onContinue, showModal }) => {
+  const { product, insurance } = orderData;
   
-  const { product } = orderData;
   if (!product) {
       // This should not happen if the flow is correct, but it's a good safeguard.
       return null; 
   }
 
+  const insuranceOptions = {
+    plus: { name: 'Seguro Plus', price: 5499 },
+    rc: { name: 'Seguro RC', price: 2199 },
+    none: { name: 'No me interesa por el momento', price: 0 },
+  };
+
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    const newInsuranceState = {
-      plus: name === 'plus' ? checked : false,
-      rc: name === 'rc' ? checked : false,
-      none: name === 'none' ? checked : false,
-    };
-    setInsurance(newInsuranceState);
+    const { name, checked } = e.target as { name: 'plus' | 'rc' | 'none'; checked: boolean };
+    
     setOrderData(prev => ({
       ...prev,
-      insurance: newInsuranceState,
+      insurance: {
+        plus: name === 'plus' && checked,
+        rc: name === 'rc' && checked,
+        none: name === 'none' && checked,
+        price: checked ? insuranceOptions[name].price : 0,
+        name: checked ? insuranceOptions[name].name : '',
+      }
     }));
   };
   
   const handleContinue = () => {
       if (!insurance.plus && !insurance.rc && !insurance.none) {
-          alert('Por favor, selecciona una opción de seguro para continuar.');
+          showModal({
+            type: 'warning',
+            title: 'Opción Requerida',
+            message: 'Por favor, selecciona una opción de seguro para continuar.',
+          });
           return;
       }
       onContinue();
@@ -42,7 +54,7 @@ export const AddedToCartModal: React.FC<AddedToCartModalProps> = ({ orderData, s
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
-      <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full p-6 md:p-8 my-10">
+      <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full p-6 md:p-8">
         <button className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
           <XCircleIcon className="w-8 h-8" />
         </button>

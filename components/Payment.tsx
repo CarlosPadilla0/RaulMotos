@@ -1,8 +1,7 @@
-
 import React from 'react';
 import type { OrderData } from '../types';
 import { CheckoutStepWrapper } from './CheckoutStepWrapper';
-import { CoppelIcon, CreditCardIcon, CashIcon, PayPalIcon, CoppelLogo } from './icons';
+import { CoppelIcon, CreditCardIcon, CashIcon, PayPalIcon } from './icons';
 
 interface PaymentProps {
   orderData: OrderData;
@@ -12,7 +11,7 @@ interface PaymentProps {
 }
 
 const paymentOptions = [
-    { id: 'coppel_credit', label: 'Crédito Coppel', icon: <CoppelLogo className="w-25 h-8"/> },
+    { id: 'coppel_credit', label: 'Crédito Coppel', icon: <CoppelIcon className="w-8 h-8"/> },
     { id: 'card', label: 'Tarjeta de crédito/débito', icon: <CreditCardIcon className="w-8 h-8 text-gray-600"/> },
     { id: 'cash', label: 'Efectivo en establecimiento', icon: <CashIcon className="w-8 h-8 text-gray-600"/> },
     { id: 'paypal', label: 'PayPal', icon: <PayPalIcon className="w-20 h-8 text-coppel-blue"/> }

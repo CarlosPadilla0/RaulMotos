@@ -8,7 +8,7 @@ interface ConfirmationProps {
 }
 
 export const Confirmation: React.FC<ConfirmationProps> = ({ orderData, onStartOver }) => {
-  const { product, address, paymentMethod, recipientInfo, deliveryMethod, pickupDate } = orderData;
+  const { product, address, paymentMethod, recipientInfo, deliveryMethod, pickupDate, insurance } = orderData;
   const recipient = recipientInfo.recipientType === 'other' ? `${recipientInfo.firstName} ${recipientInfo.lastName}` : address?.recipientName;
   
   const deliveryDate = pickupDate
@@ -33,6 +33,13 @@ export const Confirmation: React.FC<ConfirmationProps> = ({ orderData, onStartOv
                         <p className="text-lg font-semibold text-red-600">${product.price.toLocaleString('es-MX')}</p>
                     </div>
                 </div>
+
+                {insurance && insurance.price > 0 && (
+                    <div>
+                        <h3 className="font-semibold text-gray-700">Seguro Contratado</h3>
+                        <p className="text-gray-600">{insurance.name} - ${insurance.price.toLocaleString('es-MX')}</p>
+                    </div>
+                )}
 
                 <div>
                     <h3 className="font-semibold text-gray-700">{deliveryMethod === 'store' ? 'Recoger en' : 'Dirección de Entrega'}</h3>

@@ -44,7 +44,7 @@ const DeliveryOptionCard: React.FC<{
 
 
 export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({ orderData, setOrderData }) => {
-  const { product, deliveryMethod, pickupDate } = orderData;
+  const { product, deliveryMethod, pickupDate, insurance } = orderData;
   
   const handleDeliveryChange = (value: 'home' | 'store') => {
     setOrderData(prev => ({ ...prev, deliveryMethod: value, pickupDate: null })); // Reset date on method change
@@ -62,6 +62,16 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({ orderData, set
     return "Elige una fecha para la entrega";
   }
 
+  const getInsuranceMessage = () => {
+    if (insurance.price > 0 && insurance.name) {
+        return `¡Excelente! Has agregado el ${insurance.name} a tu compra para proteger tu moto.`;
+    }
+    if (insurance.none) {
+        return 'Has decidido no incluir una póliza de seguro por el momento.';
+    }
+    return 'Ninguna moto incluye póliza de seguro.';
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-lg w-full p-6 md:p-8">
         <h3 className="text-lg font-bold mb-4">Motos</h3>
@@ -69,7 +79,7 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({ orderData, set
             <p><strong>Por motivos de facturación</strong>, solo puedes incluir 1 moto en cada compra. Los demás productos deben ir en otro pedido.</p>
         </div>
         <div className="bg-blue-50 border-l-4 border-coppel-blue text-blue-800 p-4 rounded-r-lg mb-6 text-sm" role="alert">
-            <p>Ninguna moto incluye póliza de seguro.</p>
+            <p>{getInsuranceMessage()}</p>
         </div>
 
         <div className="border rounded-lg p-4 flex items-center justify-between mb-6">

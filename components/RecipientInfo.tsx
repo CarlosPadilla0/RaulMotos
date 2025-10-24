@@ -1,14 +1,16 @@
 
+
 import React, { useState } from 'react';
-import type { OrderData } from '../types';
+import type { OrderData, ModalConfig } from '../types';
 import { CheckoutStepWrapper } from './CheckoutStepWrapper';
-import { XCircleIcon } from './icons';
+import { XCircleIcon, InformationCircleIcon } from './icons';
 
 interface RecipientInfoProps {
   orderData: OrderData;
   setOrderData: React.Dispatch<React.SetStateAction<OrderData>>;
   onBack: () => void;
   onContinue: () => void;
+  showModal: (config: ModalConfig) => void;
 }
 
 const Input = ({ label, id, required, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string, required?: boolean }) => (
@@ -21,8 +23,9 @@ const Input = ({ label, id, required, ...props }: React.InputHTMLAttributes<HTML
 );
 
 
-export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrderData, onBack, onContinue }) => {
+export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrderData, onBack, onContinue, showModal }) => {
     const [showIneHelp, setShowIneHelp] = useState(false);
+    const [showFormatInfoModal, setShowFormatInfoModal] = useState(false);
     
     const handleRecipientTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newRecipientType = e.target.value as 'self' | 'other';
@@ -33,7 +36,7 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
         }));
         
         if (newRecipientType === 'other') {
-             alert("Se enviará un formato al correo proporcionado, es necesario presentarlo al momento de recibir.");
+             setShowFormatInfoModal(true);
         }
     };
 
@@ -46,14 +49,22 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
 
     const handleContinue = () => {
         if (!orderData.recipientInfo.recipientType) {
-            alert('Por favor, selecciona quién recibirá el pedido.');
+            showModal({
+                type: 'warning',
+                title: 'Campo Requerido',
+                message: 'Por favor, selecciona quién recibirá el pedido.',
+            });
             return;
         }
 
         if (orderData.recipientInfo.recipientType === 'other') {
             const { firstName, lastName, phone, ineVerificationCode } = orderData.recipientInfo;
             if (!firstName || !lastName || !phone || !ineVerificationCode) {
-                 alert('Por favor, completa todos los datos de la persona que recibe, incluyendo el código de verificación INE.');
+                 showModal({
+                    type: 'warning',
+                    title: 'Datos Incompletos',
+                    message: 'Por favor, completa todos los datos de la persona que recibe, incluyendo el código de verificación INE.',
+                 });
                  return;
             }
         }
@@ -141,6 +152,29 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
                     </button>
                  </div>
             </div>
+            
+            {showFormatInfoModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4" aria-modal="true" role="dialog">
+                    <div className="bg-white rounded-lg shadow-xl p-8 pt-6 relative max-w-lg w-full text-center transform transition-all scale-100 opacity-100">
+                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-coppel-blue mb-4">
+                            <InformationCircleIcon className="h-10 w-10 text-white" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-3">¡Importante!</h3>
+                        <p className="text-md text-gray-600 mb-6 px-4">
+                            Se enviará un <strong>formato de autorización</strong> al correo electrónico de facturación.
+                            <br/><br/>
+                            La persona que reciba deberá presentarlo (impreso o digital) junto con su identificación oficial. <strong>Este es un paso indispensable para la entrega.</strong>
+                        </p>
+                        <button 
+                            onClick={() => setShowFormatInfoModal(false)}
+                            className="w-full sm:w-auto bg-coppel-blue text-white font-bold py-3 px-12 rounded-full hover:bg-blue-800 transition-colors text-lg"
+                            aria-label="Entendido"
+                        >
+                            Entendido
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {showIneHelp && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4" aria-modal="true" role="dialog">

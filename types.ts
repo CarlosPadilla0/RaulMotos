@@ -1,8 +1,11 @@
+import type { ModalType } from './components/Modal';
+import React from 'react';
+
 export enum CheckoutStep {
   Home,
   AddedToCart,
-  DeliveryOptions,
   Login,
+  DeliveryOptions,
   AddressSelection,
   BillingInfo,
   RecipientInfo,
@@ -30,6 +33,32 @@ export interface Address {
   zip: string;
 }
 
+export interface RecipientInfo {
+  recipientType: 'self' | 'other' | '';
+  firstName: string;
+  lastName: string;
+  phone: string;
+  phoneType: 'mobile' | 'landline';
+  ineVerificationCode: string;
+}
+
+export interface OrderData {
+  product: Product | null;
+  insurance: {
+    plus: boolean;
+    rc: boolean;
+    none: boolean;
+    price: number;
+    name: string;
+  };
+  deliveryMethod: 'home' | 'store' | null;
+  pickupDate: string | null;
+  address: Address | null;
+  billingInfo: BillingInfo;
+  recipientInfo: RecipientInfo;
+  paymentMethod: string | null;
+}
+
 export interface BillingInfo {
     rfc: string;
     useGenericRfc: boolean;
@@ -44,27 +73,12 @@ export interface BillingInfo {
     gender: 'male' | 'female' | '';
 }
 
-export interface RecipientInfo {
-  recipientType: 'self' | 'other' | '';
-  firstName: string;
-  lastName: string;
-  phone: string;
-  phoneType: 'mobile' | 'landline';
-  ineVerificationCode: string;
-}
-
-
-export interface OrderData {
-  product: Product | null;
-  insurance: {
-    plus: boolean;
-    rc: boolean;
-    none: boolean;
-  };
-  deliveryMethod: 'home' | 'store' | null;
-  pickupDate: string | null;
-  address: Address | null;
-  billingInfo: BillingInfo;
-  recipientInfo: RecipientInfo;
-  paymentMethod: string | null;
+export interface ModalConfig {
+  title: string;
+  message: string | React.ReactNode;
+  type: ModalType;
+  primaryButtonText?: string;
+  onPrimaryAction?: () => void;
+  secondaryButtonText?: string;
+  onSecondaryAction?: () => void;
 }
