@@ -1,3 +1,4 @@
+/*
 
 
 import React from 'react';
@@ -64,7 +65,6 @@ export const AddedToCartModal: React.FC<AddedToCartModalProps> = ({ orderData, s
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Product Info */}
           <div className="flex flex-col items-center text-center">
             <img src={product.image} alt={product.name} className="max-w-xs w-full object-cover rounded-lg mb-4"/>
             <h3 className="text-xl font-bold text-gray-800">{product.name}</h3>
@@ -76,7 +76,6 @@ export const AddedToCartModal: React.FC<AddedToCartModalProps> = ({ orderData, s
             </div>
           </div>
           
-          {/* Insurance Options */}
           <div className="flex flex-col justify-center">
             <p className="text-gray-700 font-medium mb-4">
               Protege tu moto con un seguro. Elige una de nuestras opciones:
@@ -119,3 +118,8 @@ export const AddedToCartModal: React.FC<AddedToCartModalProps> = ({ orderData, s
     </div>
   );
 };
+
+
+
+*/
+
