@@ -1,105 +1,98 @@
 import React, { useState } from 'react';
-import type { OrderData, BillingInfo } from '../types';
-
-const mockUsers: Record<string, BillingInfo> = {
-     'RaulMireless@coppel.com': {
-        rfc: 'MIRM900101ABC',
-        useGenericRfc: false,
-        name: 'Raul Mireles',
-        dob: '01/01/1990',
-        postalCode: '80000',
-        regime: '612',
-        cfdiUse: 'G03',
-        email: 'RaulMireless@coppel.com',
-        confirmEmail: 'RaulMireless@coppel.com',
-        curp: 'MIRM900101HZZZZZ01',
-        gender: 'male',
-    },
-    'MelissaVelazquez@coppel.com': {
-        rfc: 'VEGM850202XYZ',
-        useGenericRfc: false,
-        name: 'Melissa Velazquez',
-        dob: '02/02/1985',
-        postalCode: '80028',
-        regime: '626',
-        cfdiUse: 'G01',
-        email: 'MelissaVelazquez@coppel.com',
-        confirmEmail: 'MelissaVelazquez@coppel.com',
-        curp: 'VEGM850202MZZZZZ02',
-        gender: 'female',
-    },
-};
-
 
 interface LoginModalProps {
-  setOrderData: React.Dispatch<React.SetStateAction<OrderData>>;
-  onContinue: (isGuest: boolean) => void;
+  onClose: () => void;
+  onLogin: () => void;
+  onGuest: () => void;
 }
 
-export const LoginModal: React.FC<LoginModalProps> = ({ setOrderData, onContinue }) => {
-    const [email, setEmail] = useState('RaulMireless@coppel.com');
-    const [password, setPassword] = useState('12345');
-    const [error, setError] = useState('');
+export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin, onGuest }) => {
+  const [email, setEmail] = useState('RaulMireles@coppel.com');
+  const [password, setPassword] = useState('•••••');
 
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        const userData = mockUsers[email];
-        if (userData) {
-            setError('');
-            setOrderData(prev => ({
-                ...prev,
-                billingInfo: userData,
-            }));
-            onContinue(false); // User is NOT a guest
-        } else {
-            setError('Correo o contraseña inválidos. Intenta con los correos de ejemplo.');
-        }
-    };
-    
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
-                <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">¡Casi listo!</h2>
-                <p className="text-center text-gray-600 mb-6">Inicia sesión para una compra más rápida o continúa como invitado.</p>
-                
-                <form onSubmit={handleLogin} className="space-y-4">
-                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Correo electrónico</label>
-                        <select
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-coppel-blue focus:border-coppel-blue sm:text-sm"
-                        >
-                            <option value="RaulMireless@coppel.com">RaulMireles@coppel.com</option>
-                            <option value="MelissaVelazquez@coppel.com">MelissaVelazquez@coppel.com</option>
-                        </select>
-                     </div>
-                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Contraseña</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                             className="mt-1 block w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-coppel-blue focus:border-coppel-blue sm:text-sm"
-                         />
-                     </div>
-                     {error && <p className="text-sm text-red-600">{error}</p>}
-                     <button type="submit" className="w-full bg-coppel-blue text-white font-bold py-3 rounded-full hover:bg-blue-800 transition-colors text-lg">
-                        Iniciar Sesión
-                    </button>
-                </form>
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onLogin();
+  };
 
-                <div className="flex items-center my-6">
-                    <div className="flex-grow border-t border-gray-300"></div>
-                    <span className="flex-shrink mx-4 text-gray-500">o</span>
-                    <div className="flex-grow border-t border-gray-300"></div>
-                </div>
-                 <button onClick={() => onContinue(true)} className="w-full bg-white border-2 border-coppel-blue text-coppel-blue font-bold py-3 rounded-full hover:bg-blue-50 transition-colors text-lg">
-                    Continuar como invitado
-                </button>
-            </div>
+  return (
+    <div 
+        className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4" 
+        aria-modal="true" 
+        role="dialog"
+    >
+      <div 
+        className="bg-white rounded-lg shadow-xl p-8 relative max-w-md w-full text-left transform transition-all scale-100 opacity-100 animate-fade-in-up"
+      >
+        <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">¡Casi listo!</h2>
+            <p className="text-gray-600 mb-8">Inicia sesión para una compra más rápida o continúa como invitado.</p>
         </div>
-    );
+        
+        <form onSubmit={handleLoginSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Correo electrónico
+            </label>
+            <div className="relative">
+               <input
+                type="email"
+                name="email"
+                id="email"
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-coppel-blue focus:border-coppel-blue sm:text-sm"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <label htmlFor="password"  className="block text-sm font-medium text-gray-700 mb-1">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-coppel-blue focus:border-coppel-blue sm:text-sm"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          
+          <button
+            type="submit"
+            className="w-full bg-coppel-blue text-white font-bold py-3 px-4 rounded-full hover:bg-blue-800 transition-colors text-lg mt-6"
+          >
+            Iniciar Sesión
+          </button>
+        </form>
+        
+        <div className="mt-6 flex items-center">
+            <div className="flex-grow border-t border-gray-200"></div>
+            <span className="flex-shrink mx-4 text-gray-400 text-sm">o</span>
+            <div className="flex-grow border-t border-gray-200"></div>
+        </div>
+
+        <button
+            onClick={onGuest}
+            className="w-full mt-6 bg-white border-2 border-coppel-blue text-coppel-blue font-bold py-3 px-4 rounded-full hover:bg-blue-50 transition-colors text-lg"
+        >
+            Continuar como invitado
+        </button>
+      </div>
+      <style>{`
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(20px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-fade-in-up { animation: fade-in-up 0.3s ease-out forwards; }
+      `}</style>
+    </div>
+  );
 };

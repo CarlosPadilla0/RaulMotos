@@ -1,26 +1,32 @@
 import type { ModalType } from './components/Modal';
 import React from 'react';
 
-export enum CheckoutStep {
+export enum AppStep {
   Home,
-  AddedToCart,
+  Cart,
   Login,
-  DeliveryOptions,
-  AddressSelection,
-  BillingInfo,
-  RecipientInfo,
-  Payment,
+  Checkout,
   Confirmation,
 }
 
-export interface Product {
+export type CheckoutStatus = 'pending' | 'completed';
+export type ItemCheckoutStep = 'configuration' | 'address' | 'billing' | 'recipient' | 'payment' | 'summary';
+
+export interface CatalogProduct {
   name: string;
   sku: string;
   price: number;
   originalPrice: number;
   image: string;
-  quantity: number;
   seller: string;
+}
+
+export interface Insurance {
+  plus: boolean;
+  rc: boolean;
+  none: boolean;
+  price: number;
+  name: string;
 }
 
 export interface Address {
@@ -42,23 +48,6 @@ export interface RecipientInfo {
   cic: string;
 }
 
-export interface OrderData {
-  product: Product | null;
-  insurance: {
-    plus: boolean;
-    rc: boolean;
-    none: boolean;
-    price: number;
-    name: string;
-  };
-  deliveryMethod: 'home' | 'store' | null;
-  pickupDate: string | null;
-  address: Address | null;
-  billingInfo: BillingInfo;
-  recipientInfo: RecipientInfo;
-  paymentMethod: string | null;
-}
-
 export interface BillingInfo {
     rfc: string;
     useGenericRfc: boolean;
@@ -73,6 +62,25 @@ export interface BillingInfo {
     gender: 'male' | 'female' | '';
 }
 
+export interface CheckoutProduct extends CatalogProduct {
+  quantity: number;
+  // Per-item checkout data
+  checkoutStatus: CheckoutStatus;
+  itemCheckoutStep: ItemCheckoutStep;
+  insurance: Insurance;
+  deliveryMethod: 'home' | 'store' | null;
+  pickupDate: string | null;
+  address: Address | null;
+  billingInfo: BillingInfo;
+  recipientInfo: RecipientInfo;
+  paymentMethod: string | null;
+}
+
+export interface User {
+  billingInfo: BillingInfo;
+  addresses: Address[];
+}
+
 export interface ModalConfig {
   title: string;
   message: string | React.ReactNode;
@@ -80,5 +88,6 @@ export interface ModalConfig {
   primaryButtonText?: string;
   onPrimaryAction?: () => void;
   secondaryButtonText?: string;
+  // FIX: Changed type of onSecondaryAction from `void` to `() => void` to match ModalComponentProps.
   onSecondaryAction?: () => void;
 }

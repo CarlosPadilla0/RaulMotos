@@ -1,64 +1,61 @@
+/*
 import React from 'react';
 import type { OrderData } from '../types';
 
 interface OrderSummaryProps {
   orderData: OrderData;
-  onContinue: () => void;
-  continueButtonText?: string;
 }
 
-export const OrderSummary: React.FC<OrderSummaryProps> = ({ orderData, onContinue, continueButtonText = "Continuar compra" }) => {
-    const { product, insurance } = orderData;
-    
-    if (!product) {
-        return null;
-    }
+export const OrderSummary: React.FC<OrderSummaryProps> = ({ orderData }) => {
+  const { products } = orderData;
+  const subtotal = products.reduce((acc, p) => acc + p.price, 0);
+  const insuranceTotal = products.reduce((acc, p) => acc + (p.insurance?.price || 0), 0);
+  const total = subtotal + insuranceTotal;
 
-    const discount = product.originalPrice - product.price;
-    const shipping = 0; // Gratis
-    const total = product.price + insurance.price;
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <h2 className="text-xl font-bold mb-4 border-b pb-3">Resumen de tu compra</h2>
+      
+      <div className="space-y-3 mb-4 border-b pb-3">
+        {products.map(product => (
+            <div key={product.sku} className="flex justify-between items-start text-sm">
+                <span className="flex-1 pr-2">{product.name}</span>
+                <span className="font-semibold">${product.price.toLocaleString('es-MX')}</span>
+            </div>
+        ))}
+         {insuranceTotal > 0 && (
+            <div className="flex justify-between items-start text-sm text-coppel-blue">
+                <span className="flex-1 pr-2">Seguros</span>
+                <span className="font-semibold">${insuranceTotal.toLocaleString('es-MX')}</span>
+            </div>
+         )}
+      </div>
 
-    return (
-        <div className="bg-white rounded-lg shadow-lg w-full p-6">
-            <h3 className="text-lg font-bold mb-4 border-b pb-2">Resumen de tu compra</h3>
-            <div className="space-y-2 text-gray-600">
-                <div className="flex justify-between">
-                    <span>Subtotal (1 producto)</span>
-                    <span>${product.originalPrice.toLocaleString('es-MX')}</span>
-                </div>
-                <div className="flex justify-between text-red-500">
-                    <span>Descuento</span>
-                    <span>-${discount.toLocaleString('es-MX')}</span>
-                </div>
-                {insurance.price > 0 ? (
-                    <div className="flex justify-between">
-                        <span>{insurance.name}</span>
-                        <span>${insurance.price.toLocaleString('es-MX')}</span>
-                    </div>
-                ) : (
-                    <div className="flex justify-between">
-                        <span>Seguro</span>
-                        <span>No incluido</span>
-                    </div>
-                )}
-                <div className="flex justify-between">
-                    <span>Envío</span>
-                    <span className="text-coppel-blue font-semibold">Gratis</span>
-                </div>
-            </div>
-            <div className="flex justify-between font-bold text-lg mt-4 pt-4 border-t">
-                <span>Total de contado (IVA incluido)</span>
-                <span>${total.toLocaleString('es-MX')}</span>
-            </div>
-            <p className="text-sm text-center bg-coppel-blue/10 border border-coppel-blue/20 text-coppel-blue rounded-md p-2 mt-4">
-                Tu envío es gratis a partir de $499
-            </p>
-            <button
-                onClick={onContinue}
-                className="w-full bg-coppel-blue text-white font-bold py-3 mt-4 rounded-full hover:bg-blue-800 transition-colors"
-            >
-                {continueButtonText}
-            </button>
+      <div className="space-y-2 text-gray-700">
+        <div className="flex justify-between">
+          <span>Subtotal</span>
+          <span>${subtotal.toLocaleString('es-MX')}</span>
         </div>
-    );
+         <div className="flex justify-between">
+          <span>Descuento</span>
+          <span className="text-red-600">-$0</span>
+        </div>
+         <div className="flex justify-between">
+          <span>Seguros</span>
+          <span>${insuranceTotal.toLocaleString('es-MX')}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Envío</span>
+          <span className="font-semibold text-green-600">Gratis</span>
+        </div>
+      </div>
+      <div className="flex justify-between font-bold text-xl mt-4 pt-4 border-t">
+        <span>Total de contado (IVA incluido)</span>
+        <span>${total.toLocaleString('es-MX')}</span>
+      </div>
+    </div>
+  );
 };
+
+
+*/

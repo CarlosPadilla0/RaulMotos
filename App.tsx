@@ -1,53 +1,13 @@
 import React, { useState } from 'react';
-import { CheckoutStep } from './types';
-import type { OrderData, Product, ModalConfig } from './types';
+import { AppStep } from './types';
+import type { CatalogProduct, ModalConfig, BillingInfo, User, Address, CheckoutProduct } from './types';
 import { Home } from './components/Home';
-import { AddedToCartModal } from './components/AddedToCartModal';
-import { LoginModal } from './components/LoginModal';
-import { DeliveryOptions } from './components/DeliveryOptions';
-import { OrderSummary } from './components/OrderSummary';
-import { AddressSelection } from './components/AddressSelection';
-import { BillingInfo } from './components/BillingInfo';
-import { RecipientInfo } from './components/RecipientInfo';
-import { Payment } from './components/Payment';
-import { Confirmation } from './components/Confirmation';
+import { Cart } from './components/Cart';
+import { Header } from './components/Header';
 import { Modal, type ModalComponentProps } from './components/Modal';
-
-const initialOrderData: OrderData = {
-  product: null,
-  insurance: {
-    plus: false,
-    rc: false,
-    none: false,
-    price: 0,
-    name: '',
-  },
-  deliveryMethod: null,
-  pickupDate: null,
-  address: null,
-  billingInfo: {
-    rfc: '',
-    useGenericRfc: false,
-    name: '',
-    dob: '',
-    postalCode: '',
-    regime: '',
-    cfdiUse: '',
-    email: '',
-    confirmEmail: '',
-    curp: '',
-    gender: '',
-  },
-  recipientInfo: {
-    recipientType: '',
-    firstName: '',
-    lastName: '',
-    phone: '',
-    phoneType: 'mobile',
-    cic: '',
-  },
-  paymentMethod: null,
-};
+import { LoginModal } from './components/LoginModal';
+import { Checkout } from './components/Checkout';
+import { Confirmation } from './components/Confirmation';
 
 const initialModalConfig: Omit<ModalComponentProps, 'onClose'> = {
   isOpen: false,
@@ -56,167 +16,213 @@ const initialModalConfig: Omit<ModalComponentProps, 'onClose'> = {
   type: 'info',
 };
 
+const initialBillingInfo: BillingInfo = {
+  rfc: '', useGenericRfc: false, name: '', dob: '', postalCode: '', regime: '', cfdiUse: '', email: '', confirmEmail: '', curp: '', gender: '',
+};
+
+const createInitialCheckoutProduct = (product: CatalogProduct): CheckoutProduct => ({
+    ...product,
+    quantity: 1,
+    checkoutStatus: 'pending',
+    itemCheckoutStep: 'configuration',
+    insurance: { plus: false, rc: false, none: true, price: 0, name: '' },
+    deliveryMethod: 'home',
+    pickupDate: null,
+    address: null,
+    billingInfo: initialBillingInfo,
+    recipientInfo: { recipientType: '', firstName: '', lastName: '', phone: '', phoneType: 'mobile', cic: '' },
+    paymentMethod: null,
+});
+
+
+const mockUser: User = {
+    billingInfo: {
+        rfc: 'RIJR900101ABC', useGenericRfc: false, name: 'José Raúl Ríos Mireles', dob: '01/01/1990', postalCode: '80000', regime: '612', cfdiUse: 'G03', email: 'Raul.Mireless@Coppel.com', confirmEmail: 'Raul.Mireless@Coppel.com', curp: 'RIJR900101HSR...', gender: 'male',
+    },
+    addresses: [
+        { id: '1', isFavorite: true, recipientName: "José Raúl Ríos Mireles", street: "Calle Principal 123, Colonia Centro", city: "CULIACAN ROSALES", state: "SINALOA", zip: "80000" },
+        { id: '2', isFavorite: false, recipientName: "Melissa Martinez Velazquez", street: "Boulevard Salvador Alvarado, Aerolito y meteorito", city: "CULIACAN ROSALES", state: "SINALOA", zip: "80028" },
+        { id: '3', isFavorite: false, recipientName: "Papá de Raúl", street: "Avenida Siempre Viva 742", city: "CULIACAN ROSALES", state: "SINALOA", zip: "80050" },
+    ],
+};
+
 
 const App: React.FC = () => {
-  const [step, setStep] = useState<CheckoutStep>(CheckoutStep.Home);
-  const [orderData, setOrderData] = useState<OrderData>(initialOrderData);
-  const [isGuest, setIsGuest] = useState<boolean>(false);
+  const [step, setStep] = useState<AppStep>(AppStep.Home);
+  const [checkoutProducts, setCheckoutProducts] = useState<CheckoutProduct[]>([]);
+  const [activeProductSku, setActiveProductSku] = useState<string | null>(null);
+  
   const [modalConfig, setModalConfig] = useState(initialModalConfig);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  const showModal = (config: ModalConfig) => {
-    setModalConfig({ ...config, isOpen: true });
-  };
-
-  const closeModal = () => {
-    setModalConfig(initialModalConfig);
-  };
-
-  const resetFlow = () => {
-    setOrderData(initialOrderData);
-    setStep(CheckoutStep.Home);
-    setIsGuest(false);
-  };
-
-  const handleSelectProduct = (product: Product) => {
-    setOrderData(prev => ({
-        ...initialOrderData, // Reset all data
-        product: product, // Set the new product
+  const showModal = (config: ModalConfig) => { setModalConfig({ ...config, isOpen: true }); };
+  const closeModal = () => { setModalConfig(initialModalConfig); };
+  
+  const handleLogin = () => {
+    setCurrentUser(mockUser);
+    const favoriteAddress = mockUser.addresses.find(a => a.isFavorite) || mockUser.addresses[0] || null;
+    
+    // Pre-fill data for all pending products
+    setCheckoutProducts(prevProducts => prevProducts.map(p => {
+        if (p.checkoutStatus === 'pending') {
+            return {
+                ...p,
+                billingInfo: mockUser.billingInfo,
+                address: p.address || favoriteAddress, // Only set address if not already set
+            };
+        }
+        return p;
     }));
-    setStep(CheckoutStep.AddedToCart);
+
+    setShowLoginModal(false);
+    setStep(AppStep.Checkout);
+  };
+
+  const handleGuestLogin = () => {
+    setShowLoginModal(false);
+    setStep(AppStep.Checkout);
   };
   
-  const renderStep = () => {
-    // Guard clause for steps that require a product
-    if (step !== CheckoutStep.Home && !orderData.product) {
-      // If we are in a later step without a product, go back to home
-      setStep(CheckoutStep.Home);
-      return null; // Render nothing this cycle, will re-render with Home
+  const handleLogout = () => { setCurrentUser(null); };
+
+  const handleAddToCart = (product: CatalogProduct) => {
+    const isExisting = checkoutProducts.some(item => item.sku === product.sku);
+    if (isExisting) {
+        showModal({type: 'info', title: 'Producto en el carrito', message: `${product.name} ya se encuentra en tu carrito.`});
+        return;
     }
 
-    switch (step) {
-      case CheckoutStep.Home:
-        return <Home onSelectProduct={handleSelectProduct} />;
+    const newCheckoutProduct = createInitialCheckoutProduct(product);
+    setCheckoutProducts(prevCart => [...prevCart, newCheckoutProduct]);
 
-      case CheckoutStep.AddedToCart:
-        return <AddedToCartModal orderData={orderData} setOrderData={setOrderData} onContinue={() => setStep(CheckoutStep.Login)} showModal={showModal} />;
+    showModal({
+        type: 'success',
+        title: '¡Agregado!',
+        message: <p><strong>{product.name}</strong> se ha añadido a tu carrito.</p>,
+        primaryButtonText: 'Ver Carrito',
+        onPrimaryAction: () => {
+            setStep(AppStep.Cart);
+            closeModal();
+        },
+        secondaryButtonText: 'Seguir Comprando',
+        onSecondaryAction: closeModal
+    });
+  };
+  
+  const handleProceedToLogin = () => {
+      // Set the first pending product as active when entering checkout
+      const firstPending = checkoutProducts.find(p => p.checkoutStatus === 'pending');
+      if (firstPending) {
+        setActiveProductSku(firstPending.sku);
+      } else {
+        setActiveProductSku(null); // Or handle case where all are completed
+      }
+      setShowLoginModal(true);
+  };
+  
+  const updateCheckoutProduct = (sku: string, data: Partial<CheckoutProduct>) => {
+      setCheckoutProducts(prev => prev.map(p => p.sku === sku ? {...p, ...data} : p));
+  }
+
+  const handleFinalizePurchase = (sku: string) => {
+      updateCheckoutProduct(sku, { checkoutStatus: 'completed' });
       
-      case CheckoutStep.Login:
-        return <LoginModal setOrderData={setOrderData} onContinue={(isGuestUser) => {
-            setIsGuest(isGuestUser);
-            setStep(CheckoutStep.DeliveryOptions);
-        }} />;
+      const nextPending = checkoutProducts.find(p => p.checkoutStatus === 'pending' && p.sku !== sku);
+      if (nextPending) {
+          setActiveProductSku(nextPending.sku);
+      } else {
+          const allCompleted = checkoutProducts.every(p => p.checkoutStatus === 'completed' || p.sku === sku);
+          if (allCompleted) {
+              setActiveProductSku(null);
+              setStep(AppStep.Confirmation);
+          }
+      }
+  }
 
-      case CheckoutStep.DeliveryOptions:
-        return (
-          <div className="max-w-6xl mx-auto my-10 grid grid-cols-1 lg:grid-cols-3 gap-8 px-4">
-            <div className="lg:col-span-2">
-                <DeliveryOptions orderData={orderData} setOrderData={setOrderData} />
-            </div>
-            <div>
-                <OrderSummary orderData={orderData} onContinue={() => {
-                    if (orderData.deliveryMethod && orderData.pickupDate) {
-                        const nextStep = orderData.deliveryMethod === 'home' ? CheckoutStep.AddressSelection : CheckoutStep.BillingInfo;
-                        setStep(nextStep);
-                    } else {
-                        showModal({
-                          type: 'warning',
-                          title: 'Datos Incompletos',
-                          message: 'Por favor, selecciona un método y una fecha de entrega para continuar.',
-                        });
-                    }
-                }} />
-            </div>
-          </div>
-        );
+  const clearCartAndState = () => {
+    setCheckoutProducts([]);
+    setActiveProductSku(null);
+  };
 
-      case CheckoutStep.AddressSelection:
-         return (
-            <div className="max-w-4xl mx-auto my-10 grid grid-cols-1 lg:grid-cols-3 gap-8 px-4">
-               <div className="lg:col-span-2">
-                    <AddressSelection 
-                        orderData={orderData} 
-                        setOrderData={setOrderData} 
-                        onBack={() => setStep(CheckoutStep.DeliveryOptions)}
-                        onContinue={() => setStep(CheckoutStep.BillingInfo)}
-                        isGuest={isGuest}
-                        showModal={showModal}
-                    />
-                </div>
-                <div>
-                     <OrderSummary orderData={orderData} onContinue={() => setStep(CheckoutStep.BillingInfo)} />
-                </div>
-            </div>
-        );
+  const handleReset = () => {
+    clearCartAndState();
+    setStep(AppStep.Home);
+  };
 
-      case CheckoutStep.BillingInfo:
-         return (
-            <div className="max-w-4xl mx-auto my-10 grid grid-cols-1 lg:grid-cols-3 gap-8 px-4">
-                <div className="lg:col-span-2">
-                    <BillingInfo 
-                        orderData={orderData} 
-                        setOrderData={setOrderData} 
-                        onBack={() => {
-                        const prevStep = orderData.deliveryMethod === 'home' ? CheckoutStep.AddressSelection : CheckoutStep.DeliveryOptions;
-                        setStep(prevStep);
-                        }}
-                        onContinue={() => setStep(CheckoutStep.RecipientInfo)}
-                        showModal={showModal}
-                        closeModal={closeModal}
-                    />
-                </div>
-                 <div>
-                     <OrderSummary orderData={orderData} onContinue={() => setStep(CheckoutStep.RecipientInfo)} />
-                </div>
-            </div>
-        );
+  const handleHomeClick = () => {
+    if (step === AppStep.Confirmation) {
+        handleReset();
+    } else {
+        setStep(AppStep.Home);
+    }
+  };
 
-      case CheckoutStep.RecipientInfo:
-         return (
-            <div className="max-w-4xl mx-auto my-10 grid grid-cols-1 lg:grid-cols-3 gap-8 px-4">
-                 <div className="lg:col-span-2">
-                    <RecipientInfo 
-                        orderData={orderData} 
-                        setOrderData={setOrderData} 
-                        onBack={() => setStep(CheckoutStep.BillingInfo)}
-                        onContinue={() => setStep(CheckoutStep.Payment)}
-                        showModal={showModal}
-                    />
-                </div>
-                 <div>
-                     <OrderSummary orderData={orderData} onContinue={() => setStep(CheckoutStep.Payment)} />
-                </div>
-            </div>
-        );
-        
-      case CheckoutStep.Payment:
-        return (
-            <div className="max-w-4xl mx-auto my-10 grid grid-cols-1 lg:grid-cols-3 gap-8 px-4">
-                <div className="lg:col-span-2">
-                    <Payment 
-                        orderData={orderData} 
-                        setOrderData={setOrderData} 
-                        onBack={() => setStep(CheckoutStep.RecipientInfo)}
-                        onContinue={() => setStep(CheckoutStep.Confirmation)}
-                    />
-                </div>
-                <div>
-                     <OrderSummary orderData={orderData} onContinue={() => setStep(CheckoutStep.Confirmation)} continueButtonText="Confirmar y pagar"/>
-                </div>
-            </div>
-        );
+  const handleCartClick = () => {
+    if (step === AppStep.Confirmation) {
+        clearCartAndState();
+    }
+    setStep(AppStep.Cart);
+  };
 
-      case CheckoutStep.Confirmation:
-        return <Confirmation orderData={orderData} onStartOver={resetFlow} />;
+
+  const renderStep = () => {
+    switch (step) {
+      case AppStep.Home:
+        return <Home onAddToCart={handleAddToCart} />;
+      
+      case AppStep.Cart:
+        return <Cart 
+                  cartItems={checkoutProducts} 
+                  onContinue={handleProceedToLogin}
+                  onGoHome={() => setStep(AppStep.Home)}
+                />;
+      
+      case AppStep.Checkout:
+        return <Checkout
+                  products={checkoutProducts}
+                  activeProductSku={activeProductSku}
+                  setActiveProductSku={setActiveProductSku}
+                  onUpdateProduct={updateCheckoutProduct}
+                  onFinalizeProduct={handleFinalizePurchase}
+                  currentUser={currentUser}
+                  showModal={showModal}
+                  closeModal={closeModal}
+                />
+      
+      case AppStep.Confirmation:
+          return <Confirmation 
+                    completedProducts={checkoutProducts.filter(p => p.checkoutStatus === 'completed')} 
+                    onStartOver={handleReset}
+                    currentUser={currentUser} 
+                 />
 
       default:
-        return <div>Invalid Step</div>;
+        return <Home onAddToCart={handleAddToCart} />;
     }
   };
 
   return (
     <div className="bg-coppel-gray-light min-h-screen">
-      {renderStep()}
+      <Header 
+        cartItemCount={checkoutProducts.length} 
+        onCartClick={handleCartClick} 
+        onHomeClick={handleHomeClick}
+        currentUser={currentUser}
+        onLogin={() => setShowLoginModal(true)}
+        onLogout={handleLogout}
+      />
+      <main>
+        {renderStep()}
+      </main>
       <Modal {...modalConfig} onClose={closeModal} />
+      {showLoginModal && (
+          <LoginModal 
+            onClose={() => setShowLoginModal(false)}
+            onLogin={handleLogin}
+            onGuest={handleGuestLogin}
+          />
+      )}
     </div>
   );
 };

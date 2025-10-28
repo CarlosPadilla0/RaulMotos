@@ -1,12 +1,9 @@
 import React from 'react';
-import type { OrderData, ModalConfig } from '../types';
-import { CheckoutStepWrapper } from './CheckoutStepWrapper';
+import type { CheckoutProduct, ModalConfig, BillingInfo as BillingInfoType } from '../types';
 
 interface BillingInfoProps {
-  orderData: OrderData;
-  setOrderData: React.Dispatch<React.SetStateAction<OrderData>>;
-  onBack: () => void;
-  onContinue: () => void;
+  activeProduct: CheckoutProduct;
+  onUpdate: (data: { billingInfo: BillingInfoType }) => void;
   showModal: (config: ModalConfig) => void;
   closeModal: () => void;
 }
@@ -34,9 +31,9 @@ const Select = ({ label, id, children, required, ...props }: React.SelectHTMLAtt
 );
 
 
-export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderData, onBack, onContinue, showModal, closeModal }) => {
+export const BillingInfo: React.FC<BillingInfoProps> = ({ activeProduct, onUpdate, showModal, closeModal }) => {
     
-    const { billingInfo } = orderData;
+    const { billingInfo } = activeProduct;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -44,24 +41,18 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
 
         switch (name) {
             case 'name':
-                // Allow letters and spaces only
                 processedValue = value.replace(/[^a-zA-Z\s]/g, '');
                 break;
             case 'postalCode':
-                // Allow numbers only
                 processedValue = value.replace(/\D/g, '');
                 break;
             case 'rfc':
             case 'curp':
-                // Allow alphanumeric only and convert to uppercase
                 processedValue = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
                 break;
         }
-
-        setOrderData(prev => ({
-            ...prev,
-            billingInfo: { ...prev.billingInfo, [name]: processedValue }
-        }));
+        
+        onUpdate({ billingInfo: { ...billingInfo, [name]: processedValue }});
     };
     
     const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,71 +66,26 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
             value = `${value.slice(0, 2)}/${value.slice(2)}`;
         }
         
-        setOrderData(prev => ({
-            ...prev,
-            billingInfo: { ...prev.billingInfo, dob: value }
-        }));
+        onUpdate({ billingInfo: { ...billingInfo, dob: value }});
     };
 
     const handleGenericRfcToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
         const isChecked = e.target.checked;
-        setOrderData(prev => ({
-            ...prev,
-            billingInfo: { 
-                ...prev.billingInfo, 
-                useGenericRfc: isChecked,
-                rfc: isChecked ? GENERIC_RFC : '',
-                postalCode: isChecked ? '80105' : prev.billingInfo.postalCode === '80105' ? '' : prev.billingInfo.postalCode,
-                regime: isChecked ? '616' : '',
-                cfdiUse: isChecked ? 'S01' : '',
-            }
-        }));
+        const newBillingInfo = {
+            ...billingInfo,
+            useGenericRfc: isChecked,
+            rfc: isChecked ? GENERIC_RFC : '',
+            name: isChecked ? billingInfo.name : billingInfo.name, // Keep the buyer's name
+            postalCode: isChecked ? '80105' : billingInfo.postalCode === '80105' ? '' : billingInfo.postalCode,
+            regime: isChecked ? '616' : '',
+            cfdiUse: isChecked ? 'S01' : '',
+        };
+        onUpdate({ billingInfo: newBillingInfo });
     };
     
-    const handleContinue = () => {
-        // Step 1: Perform all validations first.
-        const { useGenericRfc, name, postalCode, cfdiUse, email, confirmEmail, rfc, regime, dob, curp, gender } = billingInfo;
-
-        if (!name || !postalCode || !cfdiUse || !email || !confirmEmail) {
-            showModal({type: 'warning', title: 'Campos Obligatorios', message: 'Por favor, completa los campos obligatorios (*): Nombre, Código Postal, Uso de CFDI y ambos campos de Correo electrónico.' });
-            return;
-        }
-
-        if (email !== confirmEmail) {
-            showModal({type: 'warning', title: 'Verificación Fallida', message: 'Los correos electrónicos no coinciden. Por favor, verifícalos.' });
-            return;
-        }
-        
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            showModal({type: 'warning', title: 'Formato Inválido', message: 'Por favor, introduce un correo electrónico con un formato válido (ej. tu@correo.com).' });
-            return;
-        }
-
-        if (!useGenericRfc) {
-            if (!rfc || !regime || !dob || !curp || !gender) {
-                showModal({type: 'warning', title: 'Campos de Facturación Requeridos', message: 'Para facturar, por favor completa todos los campos obligatorios (*): RFC, Régimen fiscal, Fecha de Nacimiento, CURP y Género.' });
-                return;
-            }
-        }
-        
-        // Step 2: If all validations pass, show the confirmation modal.
-        showModal({
-            type: 'confirmation',
-            title: 'Confirmar Información',
-            message: '¿Estás seguro de que tus datos de facturación son correctos? No podrán ser modificados después.',
-            primaryButtonText: 'Confirmar',
-            onPrimaryAction: () => {
-                onContinue();
-                closeModal();
-            },
-            secondaryButtonText: 'Revisar',
-        });
-    };
-
-
     return (
-        <CheckoutStepWrapper title="Datos de facturación" onBack={onBack}>
+        <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-6">Datos de facturación</h2>
             <div className="space-y-6">
                  <p className="text-sm text-gray-500">Los campos con asterisco (*) son obligatorios.</p>
                 <label className="flex items-center cursor-pointer">
@@ -224,13 +170,7 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
                         </>
                      )}
                 </div>
-
-                 <div className="flex justify-center mt-6">
-                     <button onClick={handleContinue} className="w-full md:w-auto bg-coppel-blue text-white font-bold py-3 px-16 rounded-full hover:bg-blue-800 transition-colors text-lg">
-                        Siguiente
-                    </button>
-                 </div>
             </div>
-        </CheckoutStepWrapper>
+        </div>
     );
 };

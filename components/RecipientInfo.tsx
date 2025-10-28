@@ -1,15 +1,10 @@
-
-
 import React, { useState } from 'react';
-import type { OrderData, ModalConfig } from '../types';
-import { CheckoutStepWrapper } from './CheckoutStepWrapper';
+import type { CheckoutProduct, ModalConfig, RecipientInfo as RecipientInfoType } from '../types';
 import { XCircleIcon, InformationCircleIcon } from './icons';
 
 interface RecipientInfoProps {
-  orderData: OrderData;
-  setOrderData: React.Dispatch<React.SetStateAction<OrderData>>;
-  onBack: () => void;
-  onContinue: () => void;
+  activeProduct: CheckoutProduct;
+  onUpdate: (data: { recipientInfo: RecipientInfoType }) => void;
   showModal: (config: ModalConfig) => void;
 }
 
@@ -23,17 +18,16 @@ const Input = ({ label, id, required, ...props }: React.InputHTMLAttributes<HTML
 );
 
 
-export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrderData, onBack, onContinue, showModal }) => {
+export const RecipientInfo: React.FC<RecipientInfoProps> = ({ activeProduct, onUpdate, showModal }) => {
     const [showIneHelp, setShowIneHelp] = useState(false);
     const [showFormatInfoModal, setShowFormatInfoModal] = useState(false);
     
     const handleRecipientTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newRecipientType = e.target.value as 'self' | 'other';
         
-        setOrderData(prev => ({
-            ...prev,
-            recipientInfo: { ...prev.recipientInfo, recipientType: newRecipientType }
-        }));
+        onUpdate({
+            recipientInfo: { ...activeProduct.recipientInfo, recipientType: newRecipientType }
+        });
         
         if (newRecipientType === 'other') {
              setShowFormatInfoModal(true);
@@ -45,52 +39,19 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
         let processedValue = value;
 
         if (name === 'cic') {
-            // Allow numbers only and limit to 9 digits
             processedValue = value.replace(/\D/g, '').slice(0, 9);
         } else if (name === 'phone') {
             processedValue = value.replace(/\D/g, '').slice(0, 10);
         }
         
-        setOrderData(prev => ({
-            ...prev,
-            recipientInfo: { ...prev.recipientInfo, [name]: processedValue }
-        }));
-    };
-
-    const handleContinue = () => {
-        if (!orderData.recipientInfo.recipientType) {
-            showModal({
-                type: 'warning',
-                title: 'Campo Requerido',
-                message: 'Por favor, selecciona quién recibirá el pedido.',
-            });
-            return;
-        }
-
-        if (orderData.recipientInfo.recipientType === 'other') {
-            const { firstName, lastName, phone, cic } = orderData.recipientInfo;
-            if (!firstName || !lastName || !phone || !cic) {
-                 showModal({
-                    type: 'warning',
-                    title: 'Datos Incompletos',
-                    message: 'Por favor, completa todos los datos de la persona que recibe, incluyendo el Código de Identificación de la Credencial (CIC).',
-                 });
-                 return;
-            }
-             if (cic.length !== 9) {
-                showModal({
-                    type: 'warning',
-                    title: 'Dato Inválido',
-                    message: 'El CIC debe contener exactamente 9 números.',
-                });
-                return;
-            }
-        }
-        onContinue();
+        onUpdate({
+            recipientInfo: { ...activeProduct.recipientInfo, [name]: processedValue }
+        });
     };
     
     return (
-        <CheckoutStepWrapper title="Persona que recibe" onBack={onBack}>
+        <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-6">Persona que recibe</h2>
             <div className="space-y-6">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">¿Quién recibirá tu pedido?<span className="text-red-500">*</span></label>
@@ -100,7 +61,7 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
                                 type="radio" 
                                 name="recipientType"
                                 value="self"
-                                checked={orderData.recipientInfo.recipientType === 'self'}
+                                checked={activeProduct.recipientInfo.recipientType === 'self'}
                                 onChange={handleRecipientTypeChange}
                                 className="h-4 w-4 text-coppel-blue focus:ring-coppel-blue border-gray-300"
                             />
@@ -111,7 +72,7 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
                                 type="radio" 
                                 name="recipientType"
                                 value="other"
-                                checked={orderData.recipientInfo.recipientType === 'other'}
+                                checked={activeProduct.recipientInfo.recipientType === 'other'}
                                 onChange={handleRecipientTypeChange}
                                 className="h-4 w-4 text-coppel-blue focus:ring-coppel-blue border-gray-300"
                             />
@@ -120,22 +81,22 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
                     </div>
                 </div>
                 
-                {orderData.recipientInfo.recipientType === 'other' && (
+                {activeProduct.recipientInfo.recipientType === 'other' && (
                     <div className="border border-gray-200 rounded-lg p-4 space-y-4">
                         <p className="text-sm text-gray-500">Los campos con asterisco (*) son obligatorios</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <Input label="Nombre(s)" id="firstName" name="firstName" value={orderData.recipientInfo.firstName} onChange={handleChange} required />
-                             <Input label="Apellido(s)" id="lastName" name="lastName" value={orderData.recipientInfo.lastName} onChange={handleChange} required />
+                             <Input label="Nombre(s)" id="firstName" name="firstName" value={activeProduct.recipientInfo.firstName} onChange={handleChange} required />
+                             <Input label="Apellido(s)" id="lastName" name="lastName" value={activeProduct.recipientInfo.lastName} onChange={handleChange} required />
                         </div>
                         <div>
-                             <Input label="Teléfono" id="phone" name="phone" type="tel" value={orderData.recipientInfo.phone} onChange={handleChange} required maxLength={10} />
+                             <Input label="Teléfono" id="phone" name="phone" type="tel" value={activeProduct.recipientInfo.phone} onChange={handleChange} required maxLength={10} />
                              <div className="flex items-center space-x-4 mt-2">
                                 <label className="flex items-center text-sm">
-                                    <input type="radio" name="phoneType" value="mobile" checked={orderData.recipientInfo.phoneType === 'mobile'} onChange={handleChange} className="h-4 w-4 text-coppel-blue focus:ring-coppel-blue border-gray-300"/>
+                                    <input type="radio" name="phoneType" value="mobile" checked={activeProduct.recipientInfo.phoneType === 'mobile'} onChange={handleChange} className="h-4 w-4 text-coppel-blue focus:ring-coppel-blue border-gray-300"/>
                                     <span className="ml-2">Celular</span>
                                 </label>
                                 <label className="flex items-center text-sm">
-                                    <input type="radio" name="phoneType" value="landline" checked={orderData.recipientInfo.phoneType === 'landline'} onChange={handleChange} className="h-4 w-4 text-coppel-blue focus:ring-coppel-blue border-gray-300"/>
+                                    <input type="radio" name="phoneType" value="landline" checked={activeProduct.recipientInfo.phoneType === 'landline'} onChange={handleChange} className="h-4 w-4 text-coppel-blue focus:ring-coppel-blue border-gray-300"/>
                                     <span className="ml-2">Fijo</span>
                                 </label>
                              </div>
@@ -156,7 +117,7 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
                             <input 
                                 id="cic" 
                                 name="cic" 
-                                value={orderData.recipientInfo.cic} 
+                                value={activeProduct.recipientInfo.cic} 
                                 onChange={handleChange}
                                 placeholder="Ingresa los 9 números del CIC"
                                 maxLength={9}
@@ -165,11 +126,6 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
                         </div>
                     </div>
                 )}
-                 <div className="flex justify-center mt-6">
-                     <button onClick={handleContinue} className="w-full md:w-auto bg-coppel-blue text-white font-bold py-3 px-16 rounded-full hover:bg-blue-800 transition-colors text-lg">
-                        Ir a formas de pago
-                    </button>
-                 </div>
             </div>
             
             {showFormatInfoModal && (
@@ -209,10 +165,10 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
                         <p className="text-sm text-gray-600 mb-4">
                            El CIC son los 9 números que se encuentran al reverso de tu credencial para votar, como se resalta en la imagen.
                         </p>
-                        <img src="/public/image.png" alt="Ejemplo de INE mostrando el Código de Identificación de la Credencial (CIC)" className="w-full rounded-md border" />
+                        <img src="public/image.png" alt="Ejemplo de INE mostrando el Código de Identificación de la Credencial (CIC)" className="w-full rounded-md border" />
                     </div>
                 </div>
             )}
-        </CheckoutStepWrapper>
+        </div>
     );
 };
