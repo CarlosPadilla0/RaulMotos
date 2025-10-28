@@ -44,7 +44,7 @@ const initialOrderData: OrderData = {
     lastName: '',
     phone: '',
     phoneType: 'mobile',
-    ineVerificationCode: '',
+    cic: '',
   },
   paymentMethod: null,
 };

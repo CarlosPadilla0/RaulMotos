@@ -41,9 +41,19 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        let processedValue = value;
+
+        if (name === 'cic') {
+            // Allow numbers only and limit to 9 digits
+            processedValue = value.replace(/\D/g, '').slice(0, 9);
+        } else if (name === 'phone') {
+            processedValue = value.replace(/\D/g, '').slice(0, 10);
+        }
+        
         setOrderData(prev => ({
             ...prev,
-            recipientInfo: { ...prev.recipientInfo, [e.target.name]: e.target.value }
+            recipientInfo: { ...prev.recipientInfo, [name]: processedValue }
         }));
     };
 
@@ -58,14 +68,22 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
         }
 
         if (orderData.recipientInfo.recipientType === 'other') {
-            const { firstName, lastName, phone, ineVerificationCode } = orderData.recipientInfo;
-            if (!firstName || !lastName || !phone || !ineVerificationCode) {
+            const { firstName, lastName, phone, cic } = orderData.recipientInfo;
+            if (!firstName || !lastName || !phone || !cic) {
                  showModal({
                     type: 'warning',
                     title: 'Datos Incompletos',
-                    message: 'Por favor, completa todos los datos de la persona que recibe, incluyendo el código de verificación INE.',
+                    message: 'Por favor, completa todos los datos de la persona que recibe, incluyendo el Código de Identificación de la Credencial (CIC).',
                  });
                  return;
+            }
+             if (cic.length !== 9) {
+                showModal({
+                    type: 'warning',
+                    title: 'Dato Inválido',
+                    message: 'El CIC debe contener exactamente 9 números.',
+                });
+                return;
             }
         }
         onContinue();
@@ -106,11 +124,11 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
                     <div className="border border-gray-200 rounded-lg p-4 space-y-4">
                         <p className="text-sm text-gray-500">Los campos con asterisco (*) son obligatorios</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <Input label="Nombre completo" id="firstName" name="firstName" value={orderData.recipientInfo.firstName} onChange={handleChange} required />
+                             <Input label="Nombre(s)" id="firstName" name="firstName" value={orderData.recipientInfo.firstName} onChange={handleChange} required />
                              <Input label="Apellido(s)" id="lastName" name="lastName" value={orderData.recipientInfo.lastName} onChange={handleChange} required />
                         </div>
                         <div>
-                             <Input label="Teléfono" id="phone" name="phone" type="tel" value={orderData.recipientInfo.phone} onChange={handleChange} required />
+                             <Input label="Teléfono" id="phone" name="phone" type="tel" value={orderData.recipientInfo.phone} onChange={handleChange} required maxLength={10} />
                              <div className="flex items-center space-x-4 mt-2">
                                 <label className="flex items-center text-sm">
                                     <input type="radio" name="phoneType" value="mobile" checked={orderData.recipientInfo.phoneType === 'mobile'} onChange={handleChange} className="h-4 w-4 text-coppel-blue focus:ring-coppel-blue border-gray-300"/>
@@ -124,8 +142,8 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
                         </div>
                         <div>
                             <div className="flex justify-between items-center mb-1">
-                                <label htmlFor="ineVerificationCode" className="block text-sm font-medium text-gray-700">
-                                    Código de verificación INE (OCR)<span className="text-red-500">*</span>
+                                <label htmlFor="cic" className="block text-sm font-medium text-gray-700">
+                                    Código de Identificación de la Credencial (CIC)<span className="text-red-500">*</span>
                                 </label>
                                 <button
                                     type="button"
@@ -136,11 +154,12 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
                                 </button>
                             </div>
                             <input 
-                                id="ineVerificationCode" 
-                                name="ineVerificationCode" 
-                                value={orderData.recipientInfo.ineVerificationCode} 
+                                id="cic" 
+                                name="cic" 
+                                value={orderData.recipientInfo.cic} 
                                 onChange={handleChange}
-                                placeholder="Se encuentra al reverso de tu INE"
+                                placeholder="Ingresa los 9 números del CIC"
+                                maxLength={9}
                                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-coppel-blue focus:border-coppel-blue sm:text-sm"
                             />
                         </div>
@@ -186,11 +205,11 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ orderData, setOrde
                         >
                             <XCircleIcon className="w-8 h-8" />
                         </button>
-                        <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Código de Verificación (OCR)</h3>
+                        <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Código de Identificación de la Credencial (CIC)</h3>
                         <p className="text-sm text-gray-600 mb-4">
-                            El código de verificación (OCR) se encuentra al reverso de tu credencial para votar, como se muestra en la imagen.
+                           El CIC son los 9 números que se encuentran al reverso de tu credencial para votar, como se resalta en la imagen.
                         </p>
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQb0XbCfLgEXq1fqt4PfIjGXUUSt2CQNPSxhQ&s" alt="Ejemplo de INE mostrando el código de verificación OCR" className="w-full rounded-md border" />
+                        <img src="/public/image.png" alt="Ejemplo de INE mostrando el Código de Identificación de la Credencial (CIC)" className="w-full rounded-md border" />
                     </div>
                 </div>
             )}

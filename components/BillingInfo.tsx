@@ -89,8 +89,7 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
                 ...prev.billingInfo, 
                 useGenericRfc: isChecked,
                 rfc: isChecked ? GENERIC_RFC : '',
-                name: isChecked ? 'PÚBLICO EN GENERAL' : prev.billingInfo.name === 'PÚBLICO EN GENERAL' ? '' : prev.billingInfo.name,
-                postalCode: isChecked ? '00000' : prev.billingInfo.postalCode === '00000' ? '' : prev.billingInfo.postalCode,
+                postalCode: isChecked ? '80105' : prev.billingInfo.postalCode === '80105' ? '' : prev.billingInfo.postalCode,
                 regime: isChecked ? '616' : '',
                 cfdiUse: isChecked ? 'S01' : '',
             }
@@ -164,7 +163,7 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ orderData, setOrderDat
                             </p>
                         )}
                      </div>
-                     <Input label="Nombre o razón social" id="name" name="name" value={billingInfo.name} onChange={handleChange} required disabled={billingInfo.useGenericRfc} />
+                     <Input label="Nombre o razón social" id="name" name="name" value={billingInfo.name} onChange={handleChange} required />
                      <Input label="Código Postal" id="postalCode" name="postalCode" value={billingInfo.postalCode} onChange={handleChange} maxLength={5} required disabled={billingInfo.useGenericRfc} />
 
                      <Select label="Régimen fiscal" id="regime" name="regime" value={billingInfo.regime} onChange={handleChange} required={!billingInfo.useGenericRfc} disabled={billingInfo.useGenericRfc}>

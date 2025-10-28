@@ -103,7 +103,7 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
         } else if (isSuggested && !selectedDate) {
           dayClasses += "bg-green-500 text-white";
         } else {
-          dayClasses += "bg-coppel-blue/30 text-coppel-blue hover:bg-coppel-blue/40";
+          dayClasses += "bg-coppel-blue/40 text-coppel-blue hover:bg-coppel-blue/40";
         }
       }
 
@@ -148,7 +148,7 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
           <span>Fecha Sugerida</span>
         </div>
         <div className="flex items-center">
-          <span className="w-3 h-3 rounded-full bg-coppel-blue mr-2"></span>
+          <span className="w-3 h-3 rounded-full bg-coppel-blue/40 mr-2"></span>
           <span>Fechas Disponibles</span>
         </div>
         <div className="flex items-center">

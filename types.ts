@@ -39,7 +39,7 @@ export interface RecipientInfo {
   lastName: string;
   phone: string;
   phoneType: 'mobile' | 'landline';
-  ineVerificationCode: string;
+  cic: string;
 }
 
 export interface OrderData {
