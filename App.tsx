@@ -32,7 +32,8 @@ const createInitialCheckoutProduct = (product: CatalogProduct): CheckoutProduct 
     billingInfo: initialBillingInfo,
     recipientInfo: { recipientType: '', firstName: '', lastName: '', phone: '', phoneType: 'mobile', cic: '' },
     paymentMethod: null,
-    paymentPlan: null,
+    motorcyclePaymentPlan: null,
+    insurancePaymentPlan: null,
 });
 
 
@@ -61,7 +62,13 @@ const App: React.FC = () => {
   const showModal = (config: ModalConfig) => { setModalConfig({ ...config, isOpen: true }); };
   const closeModal = () => { setModalConfig(initialModalConfig); };
   
-  const handleLogin = () => {
+  const handleLogin = (email: string) => {
+    if (email.toLowerCase().endsWith('@coppel.com')) {
+        setIsEmployee(true);
+    } else {
+        setIsEmployee(false);
+    }
+    
     setCurrentUser(mockUser);
     const favoriteAddress = mockUser.addresses.find(a => a.isFavorite) || mockUser.addresses[0] || null;
     
@@ -84,11 +91,6 @@ const App: React.FC = () => {
   const handleGuestLogin = () => {
     setShowLoginModal(false);
     setStep(AppStep.Checkout);
-  };
-  
-  const handleEmployeeLogin = () => {
-    setIsEmployee(true);
-    handleLogin(); // Use the same base login logic
   };
 
   const handleLogout = () => {
@@ -242,7 +244,6 @@ const App: React.FC = () => {
             onClose={() => setShowLoginModal(false)}
             onLogin={handleLogin}
             onGuest={handleGuestLogin}
-            onEmployee={handleEmployeeLogin}
           />
       )}
     </div>

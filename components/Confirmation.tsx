@@ -40,6 +40,23 @@ export const Confirmation: React.FC<ConfirmationProps> = ({ completedProducts, o
                     const discount = isEmployee ? productTotal * 0.25 : 0;
                     const finalPrice = productTotal - discount;
 
+                    const { motorcyclePaymentPlan, insurancePaymentPlan } = product;
+                    let totalMonthlyPayment = 0;
+                    let totalDownPayment = 0;
+                    let totalCredit = 0;
+
+                    if (motorcyclePaymentPlan) {
+                        totalMonthlyPayment += motorcyclePaymentPlan.monthlyPayment;
+                        totalDownPayment += motorcyclePaymentPlan.downPayment;
+                        totalCredit += motorcyclePaymentPlan.totalCredit;
+                    }
+                    if (insurancePaymentPlan) {
+                        totalMonthlyPayment += insurancePaymentPlan.monthlyPayment;
+                        totalDownPayment += insurancePaymentPlan.downPayment;
+                        totalCredit += insurancePaymentPlan.totalCredit;
+                    }
+
+
                     return (
                         <div key={product.sku} className="border rounded-lg p-4 flex flex-col sm:flex-row items-start gap-4">
                             <img src={product.image} alt={product.name} className="w-full sm:w-24 sm:h-24 object-cover rounded-md flex-shrink-0" />
@@ -97,17 +114,50 @@ export const Confirmation: React.FC<ConfirmationProps> = ({ completedProducts, o
                                     </div>
                                 </div>
 
-                                {product.paymentMethod === 'coppel_credit' && product.paymentPlan && (
+                                {product.paymentMethod === 'coppel_credit' && motorcyclePaymentPlan && (
                                     <div className="mt-4 pt-4 border-t text-sm">
-                                        <h4 className="font-semibold text-gray-600 mb-1">Detalles del Crédito Coppel</h4>
-                                        <div className="grid grid-cols-2 gap-x-4">
-                                            <p><span className="font-medium">Plazo:</span> {product.paymentPlan.term} meses</p>
-                                            <p><span className="font-medium">Abono mensual:</span> ${product.paymentPlan.monthlyPayment.toLocaleString('es-MX')}</p>
-                                            <p><span className="font-medium">Pago inicial:</span> ${product.paymentPlan.downPayment.toLocaleString('es-MX')}</p>
-                                            <p><span className="font-medium">Total a crédito:</span> ${product.paymentPlan.totalCredit.toLocaleString('es-MX')}</p>
+                                        <h4 className="font-semibold text-gray-600 mb-2">Detalles del Crédito Coppel</h4>
+                                        <div className="space-y-3">
+                                            <div>
+                                                <p className="font-medium text-gray-800">Plan de Motocicleta</p>
+                                                <div className="grid grid-cols-2 gap-x-4 pl-2 text-xs">
+                                                <p><span className="font-medium">Plazo:</span> {motorcyclePaymentPlan.term} meses</p>
+                                                <p><span className="font-medium">Abono mensual:</span> ${motorcyclePaymentPlan.monthlyPayment.toLocaleString('es-MX')}</p>
+                                                <p><span className="font-medium">Pago inicial:</span> ${motorcyclePaymentPlan.downPayment.toLocaleString('es-MX')}</p>
+                                                <p><span className="font-medium">Total a crédito:</span> ${motorcyclePaymentPlan.totalCredit.toLocaleString('es-MX')}</p>
+                                                </div>
+                                            </div>
+
+                                            {insurancePaymentPlan && (
+                                                <div>
+                                                    <p className="font-medium text-gray-800">Plan de Seguro</p>
+                                                    <div className="grid grid-cols-2 gap-x-4 pl-2 text-xs">
+                                                        <p><span className="font-medium">Plazo:</span> {insurancePaymentPlan.term} meses</p>
+                                                        <p><span className="font-medium">Abono mensual:</span> ${insurancePaymentPlan.monthlyPayment.toLocaleString('es-MX')}</p>
+                                                        <p><span className="font-medium">Pago inicial:</span> ${insurancePaymentPlan.downPayment.toLocaleString('es-MX')}</p>
+                                                        <p><span className="font-medium">Total a crédito:</span> ${insurancePaymentPlan.totalCredit.toLocaleString('es-MX')}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="font-bold pt-2 border-t text-base text-gray-900 space-y-1">
+                                                <div className="flex justify-between">
+                                                    <span>Pago inicial total:</span>
+                                                    <span>${totalDownPayment.toLocaleString('es-MX')}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>Abono mensual total:</span>
+                                                    <span>${totalMonthlyPayment.toLocaleString('es-MX')}</span>
+                                                </div>
+                                                 <div className="flex justify-between">
+                                                    <span>Total a crédito (con pago inicial):</span>
+                                                    <span>${totalCredit.toLocaleString('es-MX')}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
+
 
                             </div>
                         </div>

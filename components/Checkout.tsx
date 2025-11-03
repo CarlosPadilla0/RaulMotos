@@ -114,7 +114,8 @@ export const Checkout: React.FC<CheckoutProps> = ({
     showModal, 
     closeModal 
 }) => {
-    const [isPlanModalOpen, setPlanModalOpen] = useState(false);
+    const [isMotorcyclePlanModalOpen, setMotorcyclePlanModalOpen] = useState(false);
+    const [isInsurancePlanModalOpen, setInsurancePlanModalOpen] = useState(false);
     
     const activeProduct = products.find(p => p.sku === activeProductSku);
     const allProductsCompleted = products.every(p => p.checkoutStatus === 'completed');
@@ -127,17 +128,25 @@ export const Checkout: React.FC<CheckoutProps> = ({
 
     const handleSelectPayment = (paymentMethodId: string) => {
         if (paymentMethodId === 'coppel_credit') {
-            setPlanModalOpen(true);
+            setMotorcyclePlanModalOpen(true);
         } else {
-            handleUpdate({ paymentMethod: paymentMethodId, paymentPlan: null });
+            handleUpdate({ paymentMethod: paymentMethodId, motorcyclePaymentPlan: null, insurancePaymentPlan: null });
         }
     };
 
-    const handleSavePlan = (plan: PaymentPlan) => {
-        handleUpdate({ paymentMethod: 'coppel_credit', paymentPlan: plan });
-        setPlanModalOpen(false);
+    const handleSaveMotorcyclePlan = (plan: PaymentPlan) => {
+        handleUpdate({ paymentMethod: 'coppel_credit', motorcyclePaymentPlan: plan });
+        setMotorcyclePlanModalOpen(false);
+        if (activeProduct && activeProduct.insurance.price > 0) {
+            setInsurancePlanModalOpen(true);
+        }
     };
     
+    const handleSaveInsurancePlan = (plan: PaymentPlan) => {
+        handleUpdate({ insurancePaymentPlan: plan });
+        setInsurancePlanModalOpen(false);
+    };
+
     const changeStep = (nextStep: ItemCheckoutStep) => {
         handleUpdate({ itemCheckoutStep: nextStep });
     };
@@ -218,9 +227,15 @@ export const Checkout: React.FC<CheckoutProps> = ({
             return;
         }
 
-        if (activeProduct.paymentMethod === 'coppel_credit' && !activeProduct.paymentPlan) {
-            showModal({ type: 'error', title: 'Falta Plan de Pago', message: 'Por favor, selecciona un plan de pagos a plazos para continuar.' });
-            return;
+        if (activeProduct.paymentMethod === 'coppel_credit') {
+            if (!activeProduct.motorcyclePaymentPlan) {
+                showModal({ type: 'error', title: 'Falta Plan de Pago', message: 'Por favor, selecciona un plan de pagos para la motocicleta.' });
+                return;
+            }
+            if (activeProduct.insurance.price > 0 && !activeProduct.insurancePaymentPlan) {
+                 showModal({ type: 'error', title: 'Falta Plan de Pago', message: 'Por favor, selecciona un plan de pagos para el seguro.' });
+                 return;
+            }
         }
 
         showModal({
@@ -288,7 +303,6 @@ export const Checkout: React.FC<CheckoutProps> = ({
                             onUpdate={data => handleUpdate({ billingInfo: {...activeProduct.billingInfo, ...data.billingInfo}})}
                             showModal={showModal}
                             closeModal={closeModal}
-                            isEmployee={isEmployee}
                           />;
                 break;
             case 'recipient':
@@ -301,7 +315,7 @@ export const Checkout: React.FC<CheckoutProps> = ({
             case 'payment':
                 content = <Payment 
                             activeProduct={activeProduct} 
-                            onSelectPayment={handleSelectPayment}
+                            onSelectPayment={handleSelectPayment} 
                             isEmployee={isEmployee}
                           />;
                 break;
@@ -343,13 +357,26 @@ export const Checkout: React.FC<CheckoutProps> = ({
                 </div>
             </div>
             {activeProduct && (
-                <PaymentPlanModal 
-                    isOpen={isPlanModalOpen}
-                    onClose={() => setPlanModalOpen(false)}
-                    product={activeProduct}
-                    onSave={handleSavePlan}
-                    isEmployee={isEmployee}
-                />
+                <>
+                    <PaymentPlanModal 
+                        isOpen={isMotorcyclePlanModalOpen}
+                        onClose={() => setMotorcyclePlanModalOpen(false)}
+                        price={activeProduct.price}
+                        title="Seleccionar plazo para tu motocicleta"
+                        onSave={handleSaveMotorcyclePlan}
+                        isEmployee={isEmployee}
+                    />
+                    {activeProduct.insurance.price > 0 && (
+                        <PaymentPlanModal 
+                            isOpen={isInsurancePlanModalOpen}
+                            onClose={() => setInsurancePlanModalOpen(false)}
+                            price={activeProduct.insurance.price}
+                            title={`Seleccionar plazo para tu ${activeProduct.insurance.name}`}
+                            onSave={handleSaveInsurancePlan}
+                            isEmployee={isEmployee}
+                        />
+                    )}
+                </>
             )}
         </div>
     )

@@ -2,18 +2,17 @@ import React, { useState } from 'react';
 
 interface LoginModalProps {
   onClose: () => void;
-  onLogin: () => void;
+  onLogin: (email: string) => void;
   onGuest: () => void;
-  onEmployee: () => void;
 }
 
-export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin, onGuest, onEmployee }) => {
+export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin, onGuest }) => {
   const [email, setEmail] = useState('RaulMireles@coppel.com');
   const [password, setPassword] = useState('•••••');
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin();
+    onLogin(email);
   };
 
   return (
@@ -45,9 +44,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin, onGues
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-              </div>
             </div>
           </div>
           
@@ -74,13 +70,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin, onGues
           </button>
         </form>
         
-        <button
-            onClick={onEmployee}
-            className="w-full mt-4 bg-coppel-yellow text-gray-900 font-bold py-3 px-4 rounded-full hover:bg-yellow-500 transition-colors text-lg"
-        >
-            Continuar como colaborador
-        </button>
-
         <div className="mt-6 flex items-center">
             <div className="flex-grow border-t border-gray-200"></div>
             <span className="flex-shrink mx-4 text-gray-400 text-sm">o</span>

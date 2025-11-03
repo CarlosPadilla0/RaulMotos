@@ -18,11 +18,11 @@ const paymentOptions = [
 export const Payment: React.FC<PaymentProps> = ({ activeProduct, onSelectPayment, isEmployee }) => {
     
     const handleSelectPayment = (paymentMethodId: string) => {
-        if (isEmployee && paymentMethodId === 'coppel_credit') {
-            return; // Do nothing if employee tries to select Coppel Credit
-        }
         onSelectPayment(paymentMethodId);
     };
+
+    const { motorcyclePaymentPlan, insurancePaymentPlan } = activeProduct;
+    const totalMonthlyPayment = (motorcyclePaymentPlan?.monthlyPayment || 0) + (insurancePaymentPlan?.monthlyPayment || 0);
 
     return (
         <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
@@ -31,37 +31,47 @@ export const Payment: React.FC<PaymentProps> = ({ activeProduct, onSelectPayment
                 {paymentOptions.map(option => {
                     const isCoppelCredit = option.id === 'coppel_credit';
                     const isDisabled = isEmployee && isCoppelCredit;
+                    
+                    let baseClasses = 'p-4 border rounded-lg transition-all ';
+                    let stateClasses = '';
+                    if (isDisabled) {
+                        stateClasses = 'bg-gray-100 opacity-60 cursor-not-allowed';
+                    } else {
+                        stateClasses = `cursor-pointer ${activeProduct.paymentMethod === option.id ? 'border-2 border-coppel-blue bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'}`;
+                    }
 
                     return (
                         <div 
                             key={option.id}
-                            onClick={() => handleSelectPayment(option.id)}
-                            className={`p-4 border rounded-lg transition-all ${
-                                isDisabled 
-                                ? 'bg-gray-100 cursor-not-allowed opacity-60' 
-                                : activeProduct.paymentMethod === option.id 
-                                ? 'border-2 border-coppel-blue bg-blue-50' 
-                                : 'border-gray-200 bg-white hover:border-gray-300 cursor-pointer'
-                            }`}
+                            onClick={() => !isDisabled && handleSelectPayment(option.id)}
+                            className={baseClasses + stateClasses}
                         >
                             <div className="flex items-center">
                                 <div className="w-20 flex items-center justify-center">
                                     {option.icon}
                                 </div>
-                                <span className={`font-semibold ml-4 ${isDisabled ? 'text-gray-500' : 'text-gray-700'}`}>{option.label}</span>
+                                <span className="font-semibold text-gray-700 ml-4">{option.label}</span>
                             </div>
-                            {isCoppelCredit && activeProduct.paymentPlan && !isDisabled && (
-                                <div className="mt-2 ml-4 pl-20 text-sm text-green-700">
-                                    <p><strong>Plan seleccionado:</strong> {activeProduct.paymentPlan.term} meses con abonos de ${activeProduct.paymentPlan.monthlyPayment.toLocaleString('es-MX')}.</p>
+                            {isCoppelCredit && motorcyclePaymentPlan && !isDisabled && (
+                                <div className="mt-3 ml-4 pl-20 text-sm text-green-700 space-y-2">
+                                    <div>
+                                        <p><strong>Motocicleta:</strong> {motorcyclePaymentPlan.term} meses con abonos de ${motorcyclePaymentPlan.monthlyPayment.toLocaleString('es-MX')}.</p>
+                                        {insurancePaymentPlan && (
+                                            <p><strong>Seguro:</strong> {insurancePaymentPlan.term} meses con abonos de ${insurancePaymentPlan.monthlyPayment.toLocaleString('es-MX')}.</p>
+                                        )}
+                                    </div>
+                                    <p className="font-bold border-t mt-1 pt-1">
+                                        <strong>Abono mensual total:</strong> ${totalMonthlyPayment.toLocaleString('es-MX')}
+                                    </p>
                                 </div>
                             )}
-                            {isDisabled && (
+                             {isDisabled && (
                                 <div className="mt-2 ml-4 pl-20 text-xs text-gray-500">
-                                    <p>Esta opción de pago no está disponible para colaboradores.</p>
+                                    <p>Esta opción no está disponible para colaboradores.</p>
                                 </div>
                             )}
                         </div>
-                    );
+                    )
                 })}
             </div>
         </div>

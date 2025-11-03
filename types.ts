@@ -84,7 +84,8 @@ export interface CheckoutProduct extends CatalogProduct {
   billingInfo: BillingInfo;
   recipientInfo: RecipientInfo;
   paymentMethod: string | null;
-  paymentPlan: PaymentPlan | null;
+  motorcyclePaymentPlan: PaymentPlan | null;
+  insurancePaymentPlan: PaymentPlan | null;
 }
 
 export interface User {

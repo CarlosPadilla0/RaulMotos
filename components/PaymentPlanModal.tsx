@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { CheckoutProduct, PaymentPlan } from '../types';
-import { XCircleIcon } from './icons';
+import type { PaymentPlan } from '../types';
+import { XCircleIcon, InformationCircleIcon } from './icons';
 
 interface PaymentPlanModalProps {
   isOpen: boolean;
   onClose: () => void;
-  product: CheckoutProduct;
+  price: number;
+  title: string;
   onSave: (plan: PaymentPlan) => void;
   isEmployee: boolean;
 }
@@ -23,15 +24,14 @@ const formatCurrency = (amount: number) => {
     return `$${Math.round(amount).toLocaleString('es-MX')}`;
 }
 
-export const PaymentPlanModal: React.FC<PaymentPlanModalProps> = ({ isOpen, onClose, product, onSave, isEmployee }) => {
+export const PaymentPlanModal: React.FC<PaymentPlanModalProps> = ({ isOpen, onClose, price, title, onSave, isEmployee }) => {
     const [selectedTerm, setSelectedTerm] = useState<number>(30);
     const [downPayment, setDownPayment] = useState<number>(0);
 
     const cashPrice = useMemo(() => {
-        const basePrice = product.price + (product.insurance?.price || 0);
-        const discount = isEmployee ? basePrice * 0.25 : 0;
-        return basePrice - discount;
-    }, [product, isEmployee]);
+        const discount = isEmployee ? price * 0.25 : 0;
+        return price - discount;
+    }, [price, isEmployee]);
 
     useEffect(() => {
         // Set initial down payment to 10% of cash price
@@ -87,7 +87,7 @@ export const PaymentPlanModal: React.FC<PaymentPlanModalProps> = ({ isOpen, onCl
                 >
                     <XCircleIcon className="w-8 h-8" />
                 </button>
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Seleccionar plazo de compra</h2>
+                <h2 className="text-xl font-bold text-gray-800 mb-4">{title}</h2>
                 
                 <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
                     <label htmlFor="downPayment" className="font-semibold text-gray-700 whitespace-nowrap">Su Pago Inicial:</label>
@@ -101,6 +101,14 @@ export const PaymentPlanModal: React.FC<PaymentPlanModalProps> = ({ isOpen, onCl
                     <button className="px-6 py-2 bg-gray-300 text-gray-600 font-semibold rounded-md cursor-not-allowed" disabled>
                         Recalcular
                     </button>
+                </div>
+
+                <div className="my-4 p-3 bg-green-50 border-l-4 border-green-500 text-green-800 rounded-r-lg flex items-start">
+                    <InformationCircleIcon className="w-6 h-6 mr-3 flex-shrink-0" />
+                    <div>
+                        <p className="font-bold">¡Paga menos!</p>
+                        <p className="text-sm">Si liquidas tu crédito dentro de los primeros 30 días, solo pagas el <strong>precio de contado: {formatCurrency(cashPrice)}</strong>.</p>
+                    </div>
                 </div>
 
                 <div className="overflow-x-auto">

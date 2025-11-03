@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { CheckoutProduct, Insurance } from '../types';
 import { InformationCircleIcon } from './icons';
 import { Calendar } from './Calendar';
@@ -10,6 +10,17 @@ interface ItemConfigurationProps {
 
 export const ItemConfiguration: React.FC<ItemConfigurationProps> = ({ activeProduct, onUpdate }) => {
     
+    useEffect(() => {
+        if (activeProduct.type !== 'motorcycle' && !activeProduct.pickupDate) {
+            const pickupDate = new Date();
+            // A simple logic to set pickup 3 days in the future.
+            // A more robust solution would handle weekends/holidays.
+            pickupDate.setDate(pickupDate.getDate() + 3);
+            const formattedDate = pickupDate.toISOString().split('T')[0];
+            onUpdate({ pickupDate: formattedDate });
+        }
+    }, [activeProduct.type, activeProduct.pickupDate, onUpdate]);
+
     const handleInsuranceChange = (type: 'plus' | 'rc' | 'none') => {
         let newInsurance: Insurance;
         switch (type) {
@@ -79,8 +90,19 @@ export const ItemConfiguration: React.FC<ItemConfigurationProps> = ({ activeProd
         )}
 
         <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">{activeProduct.type === 'motorcycle' ? '2.' : '1.'} Elige la fecha de entrega</h3>
-            <Calendar selectedDate={activeProduct.pickupDate} onDateSelect={handleDateSelect} />
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">{activeProduct.type === 'motorcycle' ? '2.' : '1.'} Fecha de Entrega</h3>
+             {activeProduct.type === 'motorcycle' ? (
+                <Calendar selectedDate={activeProduct.pickupDate} onDateSelect={handleDateSelect} />
+             ) : (
+                <div className="mt-4 p-4 bg-gray-100 rounded-lg text-center">
+                    <p className="font-semibold text-gray-800">Tu producto estará disponible para recoger el:</p>
+                    <p className="text-xl font-bold text-coppel-blue mt-2">
+                        {activeProduct.pickupDate 
+                            ? new Date(activeProduct.pickupDate + 'T00:00:00').toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+                            : 'Calculando...'}
+                    </p>
+                </div>
+             )}
         </div>
 
         <div className="mt-8 pt-6 border-t">
