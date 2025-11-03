@@ -288,6 +288,7 @@ export const Checkout: React.FC<CheckoutProps> = ({
                             onUpdate={data => handleUpdate({ billingInfo: {...activeProduct.billingInfo, ...data.billingInfo}})}
                             showModal={showModal}
                             closeModal={closeModal}
+                            isEmployee={isEmployee}
                           />;
                 break;
             case 'recipient':
@@ -300,7 +301,8 @@ export const Checkout: React.FC<CheckoutProps> = ({
             case 'payment':
                 content = <Payment 
                             activeProduct={activeProduct} 
-                            onSelectPayment={handleSelectPayment} 
+                            onSelectPayment={handleSelectPayment}
+                            isEmployee={isEmployee}
                           />;
                 break;
             default:

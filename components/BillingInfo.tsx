@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { CheckoutProduct, ModalConfig, BillingInfo as BillingInfoType } from '../types';
+import { InformationCircleIcon } from './icons';
 
 interface BillingInfoProps {
   activeProduct: CheckoutProduct;
   onUpdate: (data: { billingInfo: BillingInfoType }) => void;
   showModal: (config: ModalConfig) => void;
   closeModal: () => void;
+  isEmployee: boolean;
 }
 
 const GENERIC_RFC = 'XAXX010101000';
@@ -31,9 +33,26 @@ const Select = ({ label, id, children, required, ...props }: React.SelectHTMLAtt
 );
 
 
-export const BillingInfo: React.FC<BillingInfoProps> = ({ activeProduct, onUpdate, showModal, closeModal }) => {
+export const BillingInfo: React.FC<BillingInfoProps> = ({ activeProduct, onUpdate, showModal, closeModal, isEmployee }) => {
     
     const { billingInfo } = activeProduct;
+
+    useEffect(() => {
+        if (isEmployee && !billingInfo.useGenericRfc) {
+            const newBillingInfo: BillingInfoType = {
+                ...billingInfo,
+                useGenericRfc: true,
+                rfc: GENERIC_RFC,
+                postalCode: '80105',
+                regime: '616',
+                cfdiUse: 'S01',
+                dob: '',
+                curp: '',
+                gender: '',
+            };
+            onUpdate({ billingInfo: newBillingInfo });
+        }
+    }, [isEmployee, billingInfo, onUpdate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -70,6 +89,8 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ activeProduct, onUpdat
     };
 
     const handleGenericRfcToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (isEmployee) return;
+
         const isChecked = e.target.checked;
         const newBillingInfo = {
             ...billingInfo,
@@ -88,16 +109,24 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({ activeProduct, onUpdat
             <h2 className="text-xl font-bold text-gray-800 mb-6">Datos de facturación</h2>
             <div className="space-y-6">
                  <p className="text-sm text-gray-500">Los campos con asterisco (*) son obligatorios.</p>
-                <label className="flex items-center cursor-pointer">
+                <label className={`flex items-center ${isEmployee ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                     <input 
                         type="checkbox" 
                         checked={billingInfo.useGenericRfc}
                         onChange={handleGenericRfcToggle}
-                        className="h-5 w-5 text-coppel-blue focus:ring-coppel-blue border-gray-300 rounded"
+                        className="h-5 w-5 text-coppel-blue focus:ring-coppel-blue border-gray-300 rounded disabled:bg-gray-200"
+                        disabled={isEmployee}
                     />
-                    <span className="ml-3 font-semibold text-gray-800">Usar RFC genérico</span>
+                    <span className={`ml-3 font-semibold ${isEmployee ? 'text-gray-500' : 'text-gray-800'}`}>Usar RFC genérico</span>
                 </label>
                 
+                {isEmployee && (
+                    <div className="flex items-start p-3 bg-yellow-50 border-l-4 border-coppel-yellow text-yellow-800 rounded-r-lg">
+                       <InformationCircleIcon className="w-5 h-5 mr-2 mt-px flex-shrink-0" />
+                       <p className="text-sm font-medium">Como colaborador, la facturación se realiza únicamente con RFC genérico.</p>
+                   </div>
+                )}
+
                 <div className="border border-gray-200 rounded-lg p-4 space-y-4">
                      <div>
                         <Input label="RFC" id="rfc" name="rfc" value={billingInfo.rfc} onChange={handleChange} maxLength={13} required disabled={billingInfo.useGenericRfc} />
