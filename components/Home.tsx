@@ -1,15 +1,16 @@
 import React from 'react';
 import type { CatalogProduct } from '../types';
-import { CoppelIcon, CoppelLogo, MotorcycleIcon } from './icons';
+import { MotorcycleIcon, WasherIcon } from './icons';
 
-const motorcycles: CatalogProduct[] = [
+const products: CatalogProduct[] = [
     {
         name: "Motocicleta Bajaj Pulsar N 250 cc 2026",
         sku: "450918",
         price: 57499,
         originalPrice: 66999,
         image: "https://cdn5.coppel.com/pm/5038053-1.jpg",
-        seller: "Coppel"
+        seller: "Coppel",
+        type: 'motorcycle',
     },
     {
         name: "Motocicleta Vento Nitrox 250 cc 2025",
@@ -17,7 +18,8 @@ const motorcycles: CatalogProduct[] = [
         price: 48999,
         originalPrice: 54999,
         image: "https://cdn5.coppel.com/pm/5855153-1.jpg",
-        seller: "Coppel"
+        seller: "Coppel",
+        type: 'motorcycle',
     },
     {
         name: "Motocicleta Vento Xpress Sport 170 cc 2025",
@@ -25,7 +27,35 @@ const motorcycles: CatalogProduct[] = [
         price: 52999,
         originalPrice: 59999,
         image: "https://cdn5.coppel.com/pm/5854183-1.jpg",
-        seller: "Coppel"
+        seller: "Coppel",
+        type: 'motorcycle',
+    },
+    {
+        name: "Lavadora Whirlpool 22 kg Blanca",
+        sku: "789123",
+        price: 12999,
+        originalPrice: 15999,
+        image: "https://cdn5.coppel.com/pm/2324083-1.jpg",
+        seller: "Coppel",
+        type: 'appliance',
+    },
+    {
+        name: "Lavadora Mabe 24 kg Aqua Saver Green",
+        sku: "789456",
+        price: 14599,
+        originalPrice: 17999,
+        image: "https://cdn5.coppel.com/pm/3831793-1.jpg",
+        seller: "Coppel",
+        type: 'appliance',
+    },
+    {
+        name: "Lavadora Samsung 25 kg Carga Superior",
+        sku: "789789",
+        price: 16999,
+        originalPrice: 20999,
+        image: "https://cdn5.coppel.com/pm/4538803-1.jpg",
+        seller: "Coppel",
+        type: 'appliance',
     }
 ];
 
@@ -54,19 +84,38 @@ const ProductCard: React.FC<{ product: CatalogProduct, onAddToCart: () => void }
 
 
 export const Home: React.FC<HomeProps> = ({ onAddToCart }) => {
-    return (
-        <div className="container mx-auto px-4 py-10">
-            <div className="text-center mb-10">
-                 <CoppelLogo className="w-45 h-20 text-coppel-blue mx-auto mb-4" />
-                <h1 className="text-4xl font-extrabold text-gray-900">Elige tu próxima moto</h1>
-                <p className="text-lg text-gray-600 mt-2">Comienza tu aventura sobre dos ruedas.</p>
-            </div>
+    const motorcycles = products.filter(p => p.type === 'motorcycle');
+    const appliances = products.filter(p => p.type === 'appliance');
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {motorcycles.map(moto => (
-                    <ProductCard key={moto.sku} product={moto} onAddToCart={() => onAddToCart(moto)} />
-                ))}
-            </div>
+    return (
+        <div className="container mx-auto px-4 py-10 space-y-16">
+             <section>
+                <div className="text-center mb-10">
+                    <MotorcycleIcon className="w-16 h-16 text-coppel-blue mx-auto mb-4" />
+                    <h1 className="text-4xl font-extrabold text-gray-900">Elige tu próxima moto</h1>
+                    <p className="text-lg text-gray-600 mt-2">Comienza tu aventura sobre dos ruedas.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {motorcycles.map(moto => (
+                        <ProductCard key={moto.sku} product={moto} onAddToCart={() => onAddToCart(moto)} />
+                    ))}
+                </div>
+            </section>
+            
+            <section>
+                <div className="text-center mb-10">
+                    <WasherIcon className="w-16 h-16 text-coppel-blue mx-auto mb-4" />
+                    <h1 className="text-4xl font-extrabold text-gray-900">Renueva tu hogar</h1>
+                    <p className="text-lg text-gray-600 mt-2">Encuentra los mejores electrodomésticos.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {appliances.map(appliance => (
+                        <ProductCard key={appliance.sku} product={appliance} onAddToCart={() => onAddToCart(appliance)} />
+                    ))}
+                </div>
+            </section>
         </div>
     );
 }

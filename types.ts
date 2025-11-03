@@ -19,6 +19,7 @@ export interface CatalogProduct {
   originalPrice: number;
   image: string;
   seller: string;
+  type: 'motorcycle' | 'appliance';
 }
 
 export interface Insurance {
@@ -62,6 +63,15 @@ export interface BillingInfo {
     gender: 'male' | 'female' | '';
 }
 
+export interface PaymentPlan {
+  term: number; // in months
+  monthlyPayment: number;
+  totalCredit: number;
+  downPayment: number;
+  cashPrice: number;
+}
+
+
 export interface CheckoutProduct extends CatalogProduct {
   quantity: number;
   // Per-item checkout data
@@ -74,6 +84,7 @@ export interface CheckoutProduct extends CatalogProduct {
   billingInfo: BillingInfo;
   recipientInfo: RecipientInfo;
   paymentMethod: string | null;
+  paymentPlan: PaymentPlan | null;
 }
 
 export interface User {

@@ -5,10 +5,14 @@ interface CartProps {
   cartItems: CheckoutProduct[];
   onContinue: () => void;
   onGoHome: () => void;
+  isEmployee: boolean;
 }
 
-export const Cart: React.FC<CartProps> = ({ cartItems, onContinue, onGoHome }) => {
-  const total = cartItems.reduce((acc, item) => acc + item.price, 0);
+export const Cart: React.FC<CartProps> = ({ cartItems, onContinue, onGoHome, isEmployee }) => {
+  const subtotal = cartItems.reduce((acc, item) => acc + item.price, 0);
+  const discount = isEmployee ? subtotal * 0.25 : 0;
+  const total = subtotal - discount;
+
 
   return (
     <div className="container mx-auto px-4 py-10">
@@ -16,7 +20,7 @@ export const Cart: React.FC<CartProps> = ({ cartItems, onContinue, onGoHome }) =
       {cartItems.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2 bg-white rounded-lg shadow-lg p-6 space-y-4">
-                <h2 className="text-xl font-bold">Motos</h2>
+                <h2 className="text-xl font-bold">Artículos</h2>
                 {cartItems.map(item => (
                     <div key={item.sku} className="flex items-center border-b pb-4 last:border-b-0">
                          <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-md mr-4"/>
@@ -35,8 +39,14 @@ export const Cart: React.FC<CartProps> = ({ cartItems, onContinue, onGoHome }) =
                  <div className="space-y-2 text-gray-700">
                     <div className="flex justify-between">
                         <span>Subtotal ({cartItems.length} productos)</span>
-                        <span>${total.toLocaleString('es-MX')}</span>
+                        <span>${subtotal.toLocaleString('es-MX')}</span>
                     </div>
+                    {isEmployee && (
+                        <div className="flex justify-between font-semibold text-red-600">
+                            <span>Descuento Colaborador (25%)</span>
+                            <span>-${discount.toLocaleString('es-MX')}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between">
                         <span>Envío</span>
                         <span className="font-semibold text-green-600">Gratis</span>

@@ -32,6 +32,7 @@ const createInitialCheckoutProduct = (product: CatalogProduct): CheckoutProduct 
     billingInfo: initialBillingInfo,
     recipientInfo: { recipientType: '', firstName: '', lastName: '', phone: '', phoneType: 'mobile', cic: '' },
     paymentMethod: null,
+    paymentPlan: null,
 });
 
 
@@ -55,6 +56,7 @@ const App: React.FC = () => {
   const [modalConfig, setModalConfig] = useState(initialModalConfig);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isEmployee, setIsEmployee] = useState(false);
 
   const showModal = (config: ModalConfig) => { setModalConfig({ ...config, isOpen: true }); };
   const closeModal = () => { setModalConfig(initialModalConfig); };
@@ -68,7 +70,7 @@ const App: React.FC = () => {
         if (p.checkoutStatus === 'pending') {
             return {
                 ...p,
-                billingInfo: mockUser.billingInfo,
+                billingInfo: p.type === 'motorcycle' ? mockUser.billingInfo : p.billingInfo,
                 address: p.address || favoriteAddress, // Only set address if not already set
             };
         }
@@ -84,7 +86,15 @@ const App: React.FC = () => {
     setStep(AppStep.Checkout);
   };
   
-  const handleLogout = () => { setCurrentUser(null); };
+  const handleEmployeeLogin = () => {
+    setIsEmployee(true);
+    handleLogin(); // Use the same base login logic
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setIsEmployee(false);
+  };
 
   const handleAddToCart = (product: CatalogProduct) => {
     const isExisting = checkoutProducts.some(item => item.sku === product.sku);
@@ -139,6 +149,13 @@ const App: React.FC = () => {
           }
       }
   }
+  
+  const handleRemoveFromCheckout = (skuToRemove: string) => {
+    setCheckoutProducts(prev => prev.filter(p => p.sku !== skuToRemove));
+    if (activeProductSku === skuToRemove) {
+      setActiveProductSku(null);
+    }
+  };
 
   const clearCartAndState = () => {
     setCheckoutProducts([]);
@@ -176,6 +193,7 @@ const App: React.FC = () => {
                   cartItems={checkoutProducts} 
                   onContinue={handleProceedToLogin}
                   onGoHome={() => setStep(AppStep.Home)}
+                  isEmployee={isEmployee}
                 />;
       
       case AppStep.Checkout:
@@ -185,7 +203,9 @@ const App: React.FC = () => {
                   setActiveProductSku={setActiveProductSku}
                   onUpdateProduct={updateCheckoutProduct}
                   onFinalizeProduct={handleFinalizePurchase}
+                  onRemoveProduct={handleRemoveFromCheckout}
                   currentUser={currentUser}
+                  isEmployee={isEmployee}
                   showModal={showModal}
                   closeModal={closeModal}
                 />
@@ -194,7 +214,8 @@ const App: React.FC = () => {
           return <Confirmation 
                     completedProducts={checkoutProducts.filter(p => p.checkoutStatus === 'completed')} 
                     onStartOver={handleReset}
-                    currentUser={currentUser} 
+                    currentUser={currentUser}
+                    isEmployee={isEmployee}
                  />
 
       default:
@@ -221,6 +242,7 @@ const App: React.FC = () => {
             onClose={() => setShowLoginModal(false)}
             onLogin={handleLogin}
             onGuest={handleGuestLogin}
+            onEmployee={handleEmployeeLogin}
           />
       )}
     </div>

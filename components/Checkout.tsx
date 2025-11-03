@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import type { CheckoutProduct, ModalConfig, User, Address, BillingInfo, RecipientInfo, ItemCheckoutStep, Insurance } from '../types';
+import type { CheckoutProduct, ModalConfig, User, PaymentPlan, ItemCheckoutStep } from '../types';
 import { AddressSelection } from './AddressSelection';
 import { BillingInfo as BillingInfoComponent } from './BillingInfo';
 import { RecipientInfo as RecipientInfoComponent } from './RecipientInfo';
 import { Payment } from './Payment';
 import { ItemConfiguration } from './ItemConfiguration';
 import { CheckoutStepWrapper } from './CheckoutStepWrapper';
-import { ArrowLeftIcon, CheckCircleIcon } from './icons';
+import { CheckCircleIcon, TrashIcon } from './icons';
+import { PaymentPlanModal } from './PaymentPlanModal';
 
 interface CheckoutProps {
     products: CheckoutProduct[];
@@ -14,40 +15,66 @@ interface CheckoutProps {
     setActiveProductSku: (sku: string | null) => void;
     onUpdateProduct: (sku: string, data: Partial<CheckoutProduct>) => void;
     onFinalizeProduct: (sku: string) => void;
+    onRemoveProduct: (sku: string) => void;
     currentUser: User | null;
+    isEmployee: boolean;
     showModal: (config: ModalConfig) => void;
     closeModal: () => void;
 }
 
-const ProductItem: React.FC<{product: CheckoutProduct, isActive: boolean, onSelect: () => void}> = ({ product, isActive, onSelect }) => {
+const getStepsForProduct = (productType: 'motorcycle' | 'appliance'): ItemCheckoutStep[] => {
+    if (productType === 'motorcycle') {
+        return ['configuration', 'address', 'billing', 'recipient', 'payment'];
+    }
+    // For appliances, skip 'billing'
+    return ['configuration', 'address', 'recipient', 'payment'];
+};
+
+const ProductItem: React.FC<{product: CheckoutProduct, isActive: boolean, onSelect: () => void, onRemove: () => void}> = ({ product, isActive, onSelect, onRemove }) => {
     const isCompleted = product.checkoutStatus === 'completed';
-    const baseClasses = "flex items-center p-3 rounded-lg w-full text-left transition-colors duration-200";
+    const containerBaseClasses = "flex items-center p-3 rounded-lg w-full text-left transition-colors duration-200";
     const activeClasses = "bg-coppel-blue text-white shadow-md";
     const inactiveClasses = "bg-white hover:bg-gray-50";
-    const completedClasses = "bg-green-50 border-green-300 text-green-800 hover:bg-green-100";
+    const completedClasses = "bg-green-50 border-green-300 text-green-800 hover:bg-green-100 cursor-default";
 
-    let itemClasses = `${baseClasses} `;
+    let containerClasses = `${containerBaseClasses} `;
     if (isCompleted) {
-        itemClasses += completedClasses;
+        containerClasses += completedClasses;
     } else if (isActive) {
-        itemClasses += activeClasses;
+        containerClasses += activeClasses;
     } else {
-        itemClasses += inactiveClasses;
+        containerClasses += inactiveClasses;
     }
 
     return (
-        <button onClick={onSelect} className={itemClasses} disabled={isCompleted}>
-            <img src={product.image} alt={product.name} className="w-16 h-16 object-cover rounded-md mr-4"/>
-            <div className="flex-grow">
-                <p className={`font-semibold text-sm ${isActive ? 'text-white' : 'text-gray-800'}`}>{product.name}</p>
+        <div 
+          className={`${containerClasses} ${!isCompleted ? 'cursor-pointer' : ''}`}
+          onClick={!isCompleted ? onSelect : undefined} 
+          role={!isCompleted ? "button" : undefined} 
+          tabIndex={!isCompleted ? 0 : -1}
+          onKeyDown={(e) => { if (e.key === 'Enter' && !isCompleted) onSelect()}}
+        >
+            <img src={product.image} alt={product.name} className="w-16 h-16 object-cover rounded-md mr-4 flex-shrink-0"/>
+            <div className="flex-grow min-w-0">
+                <p className={`font-semibold text-sm truncate ${isActive ? 'text-white' : 'text-gray-800'}`}>{product.name}</p>
                 <p className={`text-xs ${isActive ? 'text-blue-200' : 'text-gray-500'}`}>SKU: {product.sku}</p>
             </div>
-            {isCompleted && <CheckCircleIcon className="w-6 h-6 text-green-600 ml-2" />}
-        </button>
+            {isCompleted ? (
+                <CheckCircleIcon className="w-6 h-6 text-green-600 ml-2 flex-shrink-0" />
+            ) : (
+                <button 
+                    onClick={(e) => { e.stopPropagation(); onRemove(); }} 
+                    className={`p-2 rounded-full transition-colors flex-shrink-0 ml-2 ${isActive ? 'text-white hover:bg-white/20' : 'text-gray-500 hover:bg-red-100 hover:text-red-600'}`}
+                    aria-label={`Remover ${product.name}`}
+                >
+                    <TrashIcon className="w-5 h-5" />
+                </button>
+            )}
+        </div>
     )
 }
 
-const isBillingInfoValid = (info: BillingInfo): { valid: boolean, message: string } => {
+const isBillingInfoValid = (info: CheckoutProduct['billingInfo']): { valid: boolean, message: string } => {
     if (!info.email || !info.confirmEmail || !info.name) {
         return { valid: false, message: 'Por favor, completa los campos de nombre y correo electrónico.' };
     }
@@ -66,7 +93,7 @@ const isBillingInfoValid = (info: BillingInfo): { valid: boolean, message: strin
     return { valid: true, message: '' };
 };
 
-const isRecipientInfoValid = (info: RecipientInfo): boolean => {
+const isRecipientInfoValid = (info: CheckoutProduct['recipientInfo']): boolean => {
     if (!info.recipientType) return false;
     if (info.recipientType === 'self') return true;
     if (info.recipientType === 'other') {
@@ -81,10 +108,13 @@ export const Checkout: React.FC<CheckoutProps> = ({
     setActiveProductSku,
     onUpdateProduct,
     onFinalizeProduct, 
-    currentUser, 
+    onRemoveProduct,
+    currentUser,
+    isEmployee,
     showModal, 
     closeModal 
 }) => {
+    const [isPlanModalOpen, setPlanModalOpen] = useState(false);
     
     const activeProduct = products.find(p => p.sku === activeProductSku);
     const allProductsCompleted = products.every(p => p.checkoutStatus === 'completed');
@@ -94,6 +124,19 @@ export const Checkout: React.FC<CheckoutProps> = ({
             onUpdateProduct(activeProduct.sku, data);
         }
     }
+
+    const handleSelectPayment = (paymentMethodId: string) => {
+        if (paymentMethodId === 'coppel_credit') {
+            setPlanModalOpen(true);
+        } else {
+            handleUpdate({ paymentMethod: paymentMethodId, paymentPlan: null });
+        }
+    };
+
+    const handleSavePlan = (plan: PaymentPlan) => {
+        handleUpdate({ paymentMethod: 'coppel_credit', paymentPlan: plan });
+        setPlanModalOpen(false);
+    };
     
     const changeStep = (nextStep: ItemCheckoutStep) => {
         handleUpdate({ itemCheckoutStep: nextStep });
@@ -101,7 +144,7 @@ export const Checkout: React.FC<CheckoutProps> = ({
     
     const proceedToNextStep = () => {
         if (!activeProduct) return;
-        const steps: ItemCheckoutStep[] = ['configuration', 'address', 'billing', 'recipient', 'payment'];
+        const steps = getStepsForProduct(activeProduct.type);
         const currentIndex = steps.indexOf(activeProduct.itemCheckoutStep);
         if (currentIndex < steps.length - 1) {
             changeStep(steps[currentIndex + 1]);
@@ -110,7 +153,7 @@ export const Checkout: React.FC<CheckoutProps> = ({
     
      const prevItemStep = () => {
         if (!activeProduct) return;
-        const steps: ItemCheckoutStep[] = ['configuration', 'address', 'billing', 'recipient', 'payment'];
+        const steps = getStepsForProduct(activeProduct.type);
         const currentIndex = steps.indexOf(activeProduct.itemCheckoutStep);
         if (currentIndex > 0) {
             changeStep(steps[currentIndex - 1]);
@@ -175,6 +218,11 @@ export const Checkout: React.FC<CheckoutProps> = ({
             return;
         }
 
+        if (activeProduct.paymentMethod === 'coppel_credit' && !activeProduct.paymentPlan) {
+            showModal({ type: 'error', title: 'Falta Plan de Pago', message: 'Por favor, selecciona un plan de pagos a plazos para continuar.' });
+            return;
+        }
+
         showModal({
             type: 'confirmation',
             title: 'Confirmar Compra',
@@ -200,7 +248,7 @@ export const Checkout: React.FC<CheckoutProps> = ({
                           </>
                         : <>
                             <h2 className="text-2xl font-bold text-gray-800">Selecciona un producto</h2>
-                            <p className="text-gray-600 mt-2">Elige una motocicleta del panel izquierdo para comenzar su proceso de compra.</p>
+                            <p className="text-gray-600 mt-2">Elige un artículo del panel izquierdo para comenzar su proceso de compra.</p>
                           </>
                     }
                 </div>
@@ -252,7 +300,7 @@ export const Checkout: React.FC<CheckoutProps> = ({
             case 'payment':
                 content = <Payment 
                             activeProduct={activeProduct} 
-                            onUpdate={handleUpdate} 
+                            onSelectPayment={handleSelectPayment} 
                           />;
                 break;
             default:
@@ -277,13 +325,14 @@ export const Checkout: React.FC<CheckoutProps> = ({
             <h1 className="text-3xl font-extrabold text-gray-900 mb-8">Centro de Compra</h1>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-1 space-y-3 sticky top-24">
-                   <h2 className="text-xl font-bold text-gray-800 mb-2">Tus Motos</h2>
+                   <h2 className="text-xl font-bold text-gray-800 mb-2">Tus Artículos</h2>
                    {products.map(p => (
                        <ProductItem 
                             key={p.sku} 
                             product={p} 
                             isActive={p.sku === activeProductSku} 
                             onSelect={() => setActiveProductSku(p.sku)}
+                            onRemove={() => onRemoveProduct(p.sku)}
                         />
                    ))}
                 </div>
@@ -291,6 +340,15 @@ export const Checkout: React.FC<CheckoutProps> = ({
                     {renderActiveStep()}
                 </div>
             </div>
+            {activeProduct && (
+                <PaymentPlanModal 
+                    isOpen={isPlanModalOpen}
+                    onClose={() => setPlanModalOpen(false)}
+                    product={activeProduct}
+                    onSave={handleSavePlan}
+                    isEmployee={isEmployee}
+                />
+            )}
         </div>
     )
 }

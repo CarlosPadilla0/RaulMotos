@@ -6,9 +6,10 @@ interface ConfirmationProps {
   completedProducts: CheckoutProduct[];
   onStartOver: () => void;
   currentUser: User | null;
+  isEmployee: boolean;
 }
 
-export const Confirmation: React.FC<ConfirmationProps> = ({ completedProducts, onStartOver, currentUser }) => {
+export const Confirmation: React.FC<ConfirmationProps> = ({ completedProducts, onStartOver, currentUser, isEmployee }) => {
   
   return (
     <div className="container mx-auto max-w-4xl p-4 sm:p-6 lg:p-8">
@@ -35,11 +36,16 @@ export const Confirmation: React.FC<ConfirmationProps> = ({ completedProducts, o
                         ? new Date(product.pickupDate + 'T00:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
                         : "Fecha no especificada";
 
+                    const productTotal = product.price + product.insurance.price;
+                    const discount = isEmployee ? productTotal * 0.25 : 0;
+                    const finalPrice = productTotal - discount;
+
                     return (
                         <div key={product.sku} className="border rounded-lg p-4 flex flex-col sm:flex-row items-start gap-4">
                             <img src={product.image} alt={product.name} className="w-full sm:w-24 sm:h-24 object-cover rounded-md flex-shrink-0" />
                             <div className="flex-grow w-full">
                                 <h3 className="font-bold text-gray-800 text-lg mb-3">{product.name}</h3>
+                                
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
                                     <div>
                                         <h4 className="font-semibold text-gray-600">Dirección de Entrega</h4>
@@ -64,6 +70,45 @@ export const Confirmation: React.FC<ConfirmationProps> = ({ completedProducts, o
                                         </div>
                                     )}
                                 </div>
+                                
+                                <div className="mt-4 pt-4 border-t text-sm">
+                                    <h4 className="font-semibold text-gray-600 mb-2">Resumen de Pago</h4>
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between">
+                                            <span>Precio del producto:</span>
+                                            <span className="font-medium">${product.price.toLocaleString('es-MX')}</span>
+                                        </div>
+                                        {product.insurance.price > 0 && (
+                                            <div className="flex justify-between">
+                                                <span>Seguro:</span>
+                                                <span className="font-medium">${product.insurance.price.toLocaleString('es-MX')}</span>
+                                            </div>
+                                        )}
+                                        {isEmployee && (
+                                            <div className="flex justify-between font-semibold text-red-600">
+                                                <span>Descuento Colaborador (25%):</span>
+                                                <span>-${discount.toLocaleString('es-MX')}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between font-bold text-base text-gray-800 mt-1 pt-1 border-t">
+                                            <span>Total de contado:</span>
+                                            <span>${finalPrice.toLocaleString('es-MX')}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {product.paymentMethod === 'coppel_credit' && product.paymentPlan && (
+                                    <div className="mt-4 pt-4 border-t text-sm">
+                                        <h4 className="font-semibold text-gray-600 mb-1">Detalles del Crédito Coppel</h4>
+                                        <div className="grid grid-cols-2 gap-x-4">
+                                            <p><span className="font-medium">Plazo:</span> {product.paymentPlan.term} meses</p>
+                                            <p><span className="font-medium">Abono mensual:</span> ${product.paymentPlan.monthlyPayment.toLocaleString('es-MX')}</p>
+                                            <p><span className="font-medium">Pago inicial:</span> ${product.paymentPlan.downPayment.toLocaleString('es-MX')}</p>
+                                            <p><span className="font-medium">Total a crédito:</span> ${product.paymentPlan.totalCredit.toLocaleString('es-MX')}</p>
+                                        </div>
+                                    </div>
+                                )}
+
                             </div>
                         </div>
                     )
