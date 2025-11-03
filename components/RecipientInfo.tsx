@@ -165,7 +165,7 @@ export const RecipientInfo: React.FC<RecipientInfoProps> = ({ activeProduct, onU
                         <p className="text-sm text-gray-600 mb-4">
                            El CIC son los 9 números que se encuentran al reverso de tu credencial para votar, como se resalta en la imagen.
                         </p>
-                        <img src="public/image.png" alt="Ejemplo de INE mostrando el Código de Identificación de la Credencial (CIC)" className="w-full rounded-md border" />
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXPrf2l-9Sfhh-FWr2gJFqZfateiQ-wn1PbA&s" alt="Ejemplo de INE mostrando el Código de Identificación de la Credencial (CIC)" className="w-full rounded-md border" />
                     </div>
                 </div>
             )}
